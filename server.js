@@ -369,31 +369,25 @@ app.get("/api/email-metrics", async (req, res) => {
       console.log("[metrics] statistics/list status:", statsRes.status);
     }
 
-    const metrics = emails.map(async (email) => {
-      try {
-        const stats = statsMap[email.id] || {};
-        let sent = 0, opened = 0, clicked = 0;
+    const metrics = emails.map((email) => {
+      const stats = statsMap[email.id] || {};
+      const sent = stats.sent || stats.delivered || stats.numSent || 0;
+      const opened = stats.open || stats.opens || stats.uniqueOpens || stats.numOpened || 0;
+      const clicked = stats.click || stats.clicks || stats.uniqueClicks || stats.numClicked || 0;
 
-        sent = stats.sent || stats.delivered || stats.numSent || 0;
-        opened = stats.open || stats.opens || stats.uniqueOpens || stats.numOpened || 0;
-        clicked = stats.click || stats.clicks || stats.uniqueClicks || stats.numClicked || 0;
+      console.log(`[metrics] ${email.name}:`, JSON.stringify(stats).slice(0, 200));
 
-        console.log(`[metrics] ${email.name}:`, JSON.stringify(stats).slice(0, 200));
-
-        return {
-          name: email.name,
-          group: email.group,
-          found: true,
-          sent,
-          openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
-          clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
-          opened,
-          clicked
-        };
-      } catch {
-        return { ...email, found: false };
-      }
-    }));
+      return {
+        name: email.name,
+        group: email.group,
+        found: true,
+        sent,
+        openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
+        clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
+        opened,
+        clicked
+      };
+    });
 
     res.json(metrics);
   } catch (err) {
