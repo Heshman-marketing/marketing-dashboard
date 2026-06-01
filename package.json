@@ -1,0 +1,13 @@
+{
+  "name": "operative-marketing-os",
+  "version": "1.0.0",
+  "description": "Operative Marketing OS — internal dashboard for the AI marketing engine",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0"
+  }
+}
