@@ -351,60 +351,55 @@ app.get("/api/email-metrics", async (req, res) => {
   ];
 
   try {
-    // Fetch statistics using correct integer array params
-    const startTimestamp = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
-    const endTimestamp = new Date().toISOString();
-    const idParams = emails.map(e => `emailIds=${e.id}`).join("&");
-    const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/statistics/list?${idParams}&startTimestamp=${encodeURIComponent(startTimestamp)}&endTimestamp=${encodeURIComponent(endTimestamp)}`, {
-      headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
-    });
+    const metrics = await Promise.all(emails.map(async (email) => {
+      // Step 1: Get emailCampaignId from the v3 email object
+      const emailRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}`, {
+        headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+      });
 
-    if (!r.ok) {
-      const errText = await r.text();
-      console.log(`[metrics] statistics/list status: ${r.status}`, errText.slice(0, 200));
-      return res.status(500).json({ error: `HubSpot error: ${r.status}` });
-    }
+      if (!emailRes.ok) {
+        console.log(`[metrics] ${email.name} fetch status: ${emailRes.status}`);
+        return { ...email, found: false };
+      }
 
-    const data = await r.json();
-    console.log("[metrics] response keys:", Object.keys(data).join(", "));
-    console.log("[metrics] aggregate:", JSON.stringify(data.aggregate || {}).slice(0, 400));
-    console.log("[metrics] campaignAggregations keys:", Object.keys(data.campaignAggregations || {}).join(", ").slice(0, 200));
+      const emailData = await emailRes.json();
+      const campaignId = emailData.emailCampaignId || emailData.campaign;
+      console.log(`[metrics] ${email.name} campaignId: ${campaignId}`);
+      console.log(`[metrics] ${email.name} keys: ${Object.keys(emailData).join(", ").slice(0, 300)}`);
 
-    // campaignAggregations is keyed by emailId
-    const campaignAggs = data.campaignAggregations || {};
+      if (!campaignId) {
+        return { ...email, found: false };
+      }
 
-    const metrics = emails.map((email) => {
-      const agg = campaignAggs[email.id] || campaignAggs[String(email.id)] || {};
-      const counters = agg.counters || {};
-      const ratios = agg.ratios || {};
+      // Step 2: Get campaign stats via legacy campaigns API
+      const statsRes = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${campaignId}`, {
+        headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+      });
 
-      console.log(`[metrics] ${email.name} counters:`, JSON.stringify(counters).slice(0, 200));
+      if (!statsRes.ok) {
+        console.log(`[metrics] ${email.name} campaign status: ${statsRes.status}`);
+        return { ...email, found: false };
+      }
 
+      const statsData = await statsRes.json();
+      console.log(`[metrics] ${email.name} campaign data:`, JSON.stringify(statsData).slice(0, 300));
+
+      const counters = statsData.counters || {};
       const sent = counters.sent || counters.delivered || 0;
       const opened = counters.open || counters.opens || 0;
       const clicked = counters.click || counters.clicks || 0;
-
-      // ratios may be pre-calculated as decimals (0.45 = 45%)
-      const openRatioRaw = ratios.openRate || ratios.open;
-      const clickRatioRaw = ratios.clickRate || ratios.clickthrough;
-      const openRate = openRatioRaw != null
-        ? (openRatioRaw * 100).toFixed(1)
-        : (sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0");
-      const clickRate = clickRatioRaw != null
-        ? (clickRatioRaw * 100).toFixed(1)
-        : (sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0");
 
       return {
         name: email.name,
         group: email.group,
         found: true,
         sent,
-        openRate,
-        clickRate,
+        openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
+        clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
         opened,
         clicked
       };
-    });
+    }));
 
     res.json(metrics);
   } catch (err) {
