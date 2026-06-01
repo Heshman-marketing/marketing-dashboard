@@ -353,23 +353,28 @@ app.get("/api/email-metrics", async (req, res) => {
   try {
     const metrics = await Promise.all(emails.map(async (email) => {
       try {
-        const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}`, {
+        // Use the marketing email statistics endpoint
+        const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}/statistics/histogram?interval=WEEK`, {
           headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
         });
 
-        if (!r.ok) return { ...email, found: false };
-        const data = await r.json();
+        // Also fetch the aggregate stats
+        const r2 = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}/statistics/total`, {
+          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+        });
 
-        // HubSpot v3 stats can live in different places depending on email type
-        const stats = data.stats || data.counters || data.metrics || {};
-        const perf = data.performance || {};
+        let sent = 0, opened = 0, clicked = 0;
 
-        const sent = stats.sent || stats.delivered || perf.sent || perf.delivered || 0;
-        const opened = stats.open || stats.opens || stats.uniqueOpens || perf.open || perf.opens || 0;
-        const clicked = stats.click || stats.clicks || stats.uniqueClicks || perf.click || perf.clicks || 0;
-
-        // Log raw for debugging
-        console.log(`[metrics] ${email.name} raw:`, JSON.stringify({ stats: data.stats, counters: data.counters, metrics: data.metrics, performance: data.performance }).slice(0, 300));
+        if (r2.ok) {
+          const data2 = await r2.json();
+          console.log(`[metrics] ${email.name} total:`, JSON.stringify(data2).slice(0, 400));
+          const c = data2.counters || data2 || {};
+          sent = c.sent || c.delivered || c.numSent || 0;
+          opened = c.open || c.opens || c.numOpened || c.uniqueOpens || 0;
+          clicked = c.click || c.clicks || c.numClicked || c.uniqueClicks || 0;
+        } else {
+          console.log(`[metrics] ${email.name} total status: ${r2.status}`);
+        }
 
         return {
           name: email.name,
