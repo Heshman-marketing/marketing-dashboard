@@ -351,41 +351,58 @@ app.get("/api/email-metrics", async (req, res) => {
   ];
 
   try {
-    // Fetch each email individually with statistics included
-    const metrics = await Promise.all(emails.map(async (email) => {
-      try {
-        const r = await fetch(`https://api.hubapi.com/marketing-emails/v1/emails/with-statistics/${email.id}`, {
-          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
-        });
+    // Fetch statistics using correct integer array params
+    const idParams = emails.map(e => `emailIds=${e.id}`).join("&");
+    const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/statistics/list?${idParams}`, {
+      headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+    });
 
-        if (!r.ok) {
-          console.log(`[metrics] ${email.name} status: ${r.status}`);
-          return { ...email, found: false };
-        }
+    if (!r.ok) {
+      const errText = await r.text();
+      console.log(`[metrics] statistics/list status: ${r.status}`, errText.slice(0, 200));
+      return res.status(500).json({ error: `HubSpot error: ${r.status}` });
+    }
 
-        const data = await r.json();
-        console.log(`[metrics] ${email.name} stats:`, JSON.stringify(data.stats || {}).slice(0, 400));
+    const data = await r.json();
+    console.log("[metrics] response keys:", Object.keys(data).join(", "));
+    console.log("[metrics] aggregate:", JSON.stringify(data.aggregate || {}).slice(0, 400));
+    console.log("[metrics] campaignAggregations keys:", Object.keys(data.campaignAggregations || {}).join(", ").slice(0, 200));
 
-        const stats = data.stats || {};
-        const sent = stats.sent || 0;
-        const opened = stats.open || stats.opens || 0;
-        const clicked = stats.click || stats.clicks || 0;
+    // campaignAggregations is keyed by emailId
+    const campaignAggs = data.campaignAggregations || {};
 
-        return {
-          name: email.name,
-          group: email.group,
-          found: true,
-          sent,
-          openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
-          clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
-          opened,
-          clicked
-        };
-      } catch (err) {
-        console.log(`[metrics] ${email.name} error:`, err.message);
-        return { ...email, found: false };
-      }
-    }));
+    const metrics = emails.map((email) => {
+      const agg = campaignAggs[email.id] || campaignAggs[String(email.id)] || {};
+      const counters = agg.counters || {};
+      const ratios = agg.ratios || {};
+
+      console.log(`[metrics] ${email.name} counters:`, JSON.stringify(counters).slice(0, 200));
+
+      const sent = counters.sent || counters.delivered || 0;
+      const opened = counters.open || counters.opens || 0;
+      const clicked = counters.click || counters.clicks || 0;
+
+      // ratios may be pre-calculated as decimals (0.45 = 45%)
+      const openRatioRaw = ratios.openRate || ratios.open;
+      const clickRatioRaw = ratios.clickRate || ratios.clickthrough;
+      const openRate = openRatioRaw != null
+        ? (openRatioRaw * 100).toFixed(1)
+        : (sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0");
+      const clickRate = clickRatioRaw != null
+        ? (clickRatioRaw * 100).toFixed(1)
+        : (sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0");
+
+      return {
+        name: email.name,
+        group: email.group,
+        found: true,
+        sent,
+        openRate,
+        clickRate,
+        opened,
+        clicked
+      };
+    });
 
     res.json(metrics);
   } catch (err) {
