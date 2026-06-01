@@ -363,11 +363,12 @@ app.get("/api/email-metrics", async (req, res) => {
       }
 
       const emailData = await emailRes.json();
-      const campaignId = emailData.emailCampaignId || emailData.campaign;
-      console.log(`[metrics] ${email.name} campaignId: ${campaignId}`);
-      console.log(`[metrics] ${email.name} keys: ${Object.keys(emailData).join(", ").slice(0, 300)}`);
+      const campaignIds = emailData.allEmailCampaignIds || [];
+      const campaignId = campaignIds[0] || emailData.primaryEmailCampaignId || emailData.emailCampaignGroupId;
+      console.log(`[metrics] ${email.name} allEmailCampaignIds: ${JSON.stringify(campaignIds)}`);
 
       if (!campaignId) {
+        console.log(`[metrics] ${email.name} no campaign ID found`);
         return { ...email, found: false };
       }
 
