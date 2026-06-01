@@ -11,6 +11,14 @@ const CONTEXT_SERVICE_URL = process.env.CONTEXT_SERVICE_URL || "https://operativ
 const AOS_AGENT_URL = process.env.AOS_AGENT_URL || "https://aos-nurture-agent-production.up.railway.app";
 const STAQ_AGENT_URL = process.env.STAQ_AGENT_URL || "https://staq-prospecting-agent-production.up.railway.app";
 const COMPETITIVE_AGENT_URL = process.env.COMPETITIVE_AGENT_URL || "https://operative-competitive-intel-agent-production.up.railway.app";
+const EDITOR_PASSWORD = process.env.EDITOR_PASSWORD || "operative2026";
+
+// ── Auth middleware for editor routes ──
+function requireAuth(req, res, next) {
+  const token = req.headers["x-editor-token"];
+  if (token === EDITOR_PASSWORD) return next();
+  res.status(401).json({ error: "Unauthorized" });
+}
 
 // Proxy agent status checks
 app.get("/api/status", async (req, res) => {
@@ -39,7 +47,6 @@ app.get("/api/status", async (req, res) => {
 // Proxy learnings from context service
 app.get("/api/learnings", async (req, res) => {
   try {
-    // Read learnings files via context service
     const r = await fetch(`${CONTEXT_SERVICE_URL}/learnings-list`);
     if (!r.ok) throw new Error("Failed to fetch learnings");
     const data = await r.json();
@@ -78,6 +85,62 @@ app.post("/api/learnings", async (req, res) => {
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Context editor endpoints (protected) ──
+
+// List all context files
+app.get("/api/context/files", requireAuth, async (req, res) => {
+  try {
+    const r = await fetch(`${CONTEXT_SERVICE_URL}/files`);
+    if (!r.ok) throw new Error("Failed to fetch file list");
+    const data = await r.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get a single file's content
+app.get("/api/context/file", requireAuth, async (req, res) => {
+  const { path: filePath } = req.query;
+  if (!filePath) return res.status(400).json({ error: "path required" });
+  try {
+    const r = await fetch(`${CONTEXT_SERVICE_URL}/file?path=${encodeURIComponent(filePath)}`);
+    if (!r.ok) throw new Error("Failed to fetch file");
+    const data = await r.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Save a file's content
+app.post("/api/context/file", requireAuth, async (req, res) => {
+  const { path: filePath, content } = req.body;
+  if (!filePath || content === undefined) return res.status(400).json({ error: "path and content required" });
+  try {
+    const r = await fetch(`${CONTEXT_SERVICE_URL}/file`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ path: filePath, content }),
+    });
+    if (!r.ok) throw new Error("Failed to save file");
+    const data = await r.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Verify editor password
+app.post("/api/auth", (req, res) => {
+  const { password } = req.body;
+  if (password === EDITOR_PASSWORD) {
+    res.json({ ok: true, token: EDITOR_PASSWORD });
+  } else {
+    res.status(401).json({ ok: false, error: "Invalid password" });
   }
 });
 
