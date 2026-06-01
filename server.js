@@ -341,45 +341,44 @@ app.get("/api/email-outputs", async (req, res) => {
 
 // ── HubSpot email metrics ──
 app.get("/api/email-metrics", async (req, res) => {
-  const emailNames = [
-    "AOS Nurture Email 1",
-    "AOS Nurture Email 2",
-    "AOS Nurture Email 3",
-    "STAQ Nurture Email 1",
-    "STAQ Nurture Email 2",
-    "STAQ Nurture Email 3"
+  const emails = [
+    { name: "AOS Nurture Email 1", id: "209930076194", group: "AOS" },
+    { name: "AOS Nurture Email 2", id: "209930191703", group: "AOS" },
+    { name: "AOS Nurture Email 3", id: "209930208573", group: "AOS" },
+    { name: "STAQ Nurture Email 1", id: "210411155104", group: "STAQ" },
+    { name: "STAQ Nurture Email 2", id: "210407639089", group: "STAQ" },
+    { name: "STAQ Nurture Email 3", id: "210407658574", group: "STAQ" }
   ];
 
   try {
-    // Get all marketing emails
-    const r = await fetch("https://api.hubapi.com/marketing/v3/emails?limit=50&orderBy=-updatedAt", {
-      headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
-    });
+    const metrics = await Promise.all(emails.map(async (email) => {
+      try {
+        const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}`, {
+          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+        });
 
-    if (!r.ok) throw new Error(`HubSpot error: ${r.status}`);
-    const data = await r.json();
-    const emails = data.results || [];
+        if (!r.ok) return { ...email, found: false };
+        const data = await r.json();
 
-    // Filter to our named emails and extract stats
-    const metrics = emailNames.map(name => {
-      const email = emails.find(e => e.name === name);
-      if (!email) return { name, found: false };
+        const stats = data.stats || {};
+        const sent = stats.sent || 0;
+        const opened = stats.open || 0;
+        const clicked = stats.click || 0;
 
-      const stats = email.stats || {};
-      const sent = stats.sent || 0;
-      const opened = stats.open || 0;
-      const clicked = stats.click || 0;
-
-      return {
-        name,
-        found: true,
-        sent,
-        openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
-        clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
-        opened,
-        clicked
-      };
-    });
+        return {
+          name: email.name,
+          group: email.group,
+          found: true,
+          sent,
+          openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
+          clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
+          opened,
+          clicked
+        };
+      } catch {
+        return { ...email, found: false };
+      }
+    }));
 
     res.json(metrics);
   } catch (err) {
