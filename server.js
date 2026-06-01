@@ -354,7 +354,7 @@ app.get("/api/email-metrics", async (req, res) => {
     // Fetch each email individually with statistics included
     const metrics = await Promise.all(emails.map(async (email) => {
       try {
-        const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}?includeStatistics=true`, {
+        const r = await fetch(`https://api.hubapi.com/marketing-emails/v1/emails/with-statistics/${email.id}`, {
           headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
         });
 
@@ -364,29 +364,20 @@ app.get("/api/email-metrics", async (req, res) => {
         }
 
         const data = await r.json();
-        console.log(`[metrics] ${email.name} stats:`, JSON.stringify(data.stats || data.statistics || {}).slice(0, 300));
+        console.log(`[metrics] ${email.name} stats:`, JSON.stringify(data.stats || {}).slice(0, 400));
 
-        const stats = data.stats || data.statistics || {};
-        const counters = stats.counters || stats;
-        const ratios = stats.ratios || {};
-
-        const sent = counters.sent || counters.delivered || 0;
-        const opened = counters.open || counters.opens || counters.uniqueOpens || 0;
-        const clicked = counters.click || counters.clicks || counters.uniqueClicks || 0;
-
-        // HubSpot sometimes returns ratios directly
-        const openRate = ratios.openRate || ratios.open ||
-          (sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0");
-        const clickRate = ratios.clickRate || ratios.click ||
-          (sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0");
+        const stats = data.stats || {};
+        const sent = stats.sent || 0;
+        const opened = stats.open || stats.opens || 0;
+        const clicked = stats.click || stats.clicks || 0;
 
         return {
           name: email.name,
           group: email.group,
           found: true,
           sent,
-          openRate: typeof openRate === 'number' ? (openRate * 100).toFixed(1) : openRate,
-          clickRate: typeof clickRate === 'number' ? (clickRate * 100).toFixed(1) : clickRate,
+          openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
+          clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
           opened,
           clicked
         };
