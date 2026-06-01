@@ -680,6 +680,321 @@
       text-transform: uppercase;
     }
 
+
+    /* ── NAV TABS ── */
+    .nav-tabs {
+      display: flex;
+      gap: 0.25rem;
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0;
+    }
+
+    .nav-tab {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.6rem 1.1rem;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.15s;
+      background: none;
+      border-top: none;
+      border-left: none;
+      border-right: none;
+    }
+
+    .nav-tab:hover { color: var(--white); }
+    .nav-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+
+    /* ── VIEWS ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── CONTEXT EDITOR ── */
+    .context-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 1.5rem;
+      min-height: 600px;
+    }
+
+    .file-tree {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .file-tree-section {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .file-tree-section:last-child { border-bottom: none; }
+
+    .file-tree-header {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--orange);
+      padding: 0.75rem 1rem 0.5rem;
+    }
+
+    .file-tree-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-size: 0.78rem;
+      color: var(--muted);
+      transition: all 0.15s;
+      border-left: 2px solid transparent;
+    }
+
+    .file-tree-item:hover { color: var(--white); background: rgba(255,255,255,0.03); }
+    .file-tree-item.active { color: var(--white); border-left-color: var(--orange); background: rgba(252,80,0,0.06); }
+
+    .file-editor-panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .file-editor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .file-editor-path {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      color: var(--muted);
+      letter-spacing: 0.04em;
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .edit-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .edit-btn:hover { border-color: var(--orange); color: var(--orange); }
+    .edit-btn.save { background: var(--orange); border-color: var(--orange); color: white; }
+    .edit-btn.save:hover { opacity: 0.85; }
+    .edit-btn.cancel:hover { border-color: var(--red); color: var(--red); }
+
+    .file-content-view {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.8;
+      color: var(--off-white);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .file-content-edit {
+      flex: 1;
+      background: rgba(0,0,0,0.2);
+      border: none;
+      outline: none;
+      padding: 1.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.8;
+      color: var(--off-white);
+      resize: none;
+      width: 100%;
+    }
+
+    .editor-empty {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    /* ── AUTH MODAL ── */
+    .auth-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(4px);
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .auth-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .auth-box {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 360px;
+      transform: translateY(20px);
+      transition: transform 0.2s;
+    }
+
+    .auth-overlay.open .auth-box { transform: translateY(0); }
+
+    .auth-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .auth-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--white);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      padding: 0.7rem 1rem;
+      outline: none;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .auth-input:focus { border-color: var(--orange); }
+
+    .auth-error {
+      font-size: 0.75rem;
+      color: var(--red);
+      margin-bottom: 0.75rem;
+      display: none;
+    }
+
+
+    .file-tree-new {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .new-file-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .new-file-btn:hover {
+      border-color: var(--orange);
+      color: var(--orange);
+    }
+
+    .new-file-form {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--border);
+      display: none;
+    }
+
+    .new-file-form.open { display: block; }
+
+    .new-file-input {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--white);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      padding: 0.4rem 0.7rem;
+      outline: none;
+      margin-bottom: 0.4rem;
+      transition: border-color 0.2s;
+    }
+
+    .new-file-input:focus { border-color: var(--orange); }
+
+    .new-file-actions {
+      display: flex;
+      gap: 0.4rem;
+    }
+
+    .new-file-create {
+      flex: 1;
+      background: var(--orange);
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.04em;
+      padding: 0.4rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .new-file-create:hover { opacity: 0.85; }
+
+    .new-file-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .new-file-cancel:hover { border-color: var(--red); color: var(--red); }
+
   </style>
 </head>
 <body>
@@ -698,6 +1013,15 @@
       </div>
     </header>
 
+
+    <!-- Nav Tabs -->
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
+      <button class="nav-tab" onclick="switchTab('context')">Context Editor</button>
+    </div>
+
+    <!-- Dashboard View -->
+    <div class="view active" id="view-dashboard">
     <!-- Agent Status -->
     <div class="section-label">Agent Status</div>
     <div class="agent-grid" id="agentGrid">
@@ -840,6 +1164,24 @@
   </div>
 
 
+    </div><!-- end view-dashboard -->
+
+    <!-- Context Editor View -->
+    <div class="view" id="view-context">
+      <div class="context-layout">
+        <!-- File Tree -->
+        <div class="file-tree" id="fileTree">
+          <div class="editor-empty">Loading files...</div>
+        </div>
+
+        <!-- Editor Panel -->
+        <div class="file-editor-panel" id="editorPanel">
+          <div class="editor-empty">Select a file from the left to view or edit it.</div>
+        </div>
+      </div>
+    </div><!-- end view-context -->
+
+
   <!-- Report Modal -->
   <div class="modal-overlay" id="reportModal" onclick="closeModal(event)">
     <div class="modal">
@@ -853,6 +1195,18 @@
       <div class="modal-body">
         <pre id="modalBody"></pre>
       </div>
+    </div>
+  </div>
+
+
+  <!-- Auth Overlay -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-box">
+      <div class="auth-title">Editor Access</div>
+      <div class="auth-sub">Enter your editor password to continue.</div>
+      <div class="auth-error" id="authError">Incorrect password. Try again.</div>
+      <input class="auth-input" type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter') submitAuth()" />
+      <button class="submit-btn" onclick="submitAuth()">Unlock Editor</button>
     </div>
   </div>
 
@@ -1027,6 +1381,222 @@
       }, 3500);
     }
 
+
+
+    // ── Tab switching ──
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.querySelector(`.nav-tab[onclick="switchTab('${tab}')"]`).classList.add('active');
+      document.getElementById(`view-${tab}`).classList.add('active');
+
+      if (tab === 'context') {
+        if (!window._editorToken) {
+          document.getElementById('authOverlay').classList.add('open');
+          setTimeout(() => document.getElementById('authPassword').focus(), 200);
+        } else {
+          loadFileTree();
+        }
+      }
+    }
+
+    // ── Auth ──
+    async function submitAuth() {
+      const password = document.getElementById('authPassword').value;
+      const errEl = document.getElementById('authError');
+      errEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          window._editorToken = data.token;
+          document.getElementById('authOverlay').classList.remove('open');
+          document.getElementById('authPassword').value = '';
+          loadFileTree();
+        } else {
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        errEl.textContent = 'Connection error. Try again.';
+        errEl.style.display = 'block';
+      }
+    }
+
+    // ── File tree ──
+    async function loadFileTree() {
+      const tree = document.getElementById('fileTree');
+      try {
+        const res = await fetch('/api/context/files', {
+          headers: { 'x-editor-token': window._editorToken }
+        });
+        if (res.status === 401) { window._editorToken = null; return; }
+        const files = await res.json();
+
+        const sections = { global: 'Global', agents: 'Agents', learnings: 'Learnings' };
+        let html = '';
+        for (const [key, label] of Object.entries(sections)) {
+          const items = files[key] || [];
+          html += `<div class="file-tree-section">
+            <div class="file-tree-header">${label}</div>
+            ${items.map(f => `
+              <div class="file-tree-item" onclick="loadFile('${f.path}')" data-path="${f.path}">
+                ${f.name}
+              </div>
+            `).join('')}
+          </div>`;
+        }
+        html += `
+          <div class="file-tree-new">
+            <button class="new-file-btn" onclick="showNewFileForm()">+ New File</button>
+          </div>
+          <div class="new-file-form" id="newFileForm">
+            <select class="new-file-input" id="newFileSection">
+              <option value="global">global/</option>
+              <option value="agents">agents/</option>
+              <option value="learnings">learnings/</option>
+            </select>
+            <input class="new-file-input" id="newFileName" placeholder="filename.md" onkeydown="if(event.key==='Enter') createNewFile()" />
+            <div class="new-file-actions">
+              <button class="new-file-create" onclick="createNewFile()">Create</button>
+              <button class="new-file-cancel" onclick="hideNewFileForm()">Cancel</button>
+            </div>
+          </div>
+        `;
+        tree.innerHTML = html;
+      } catch (err) {
+        tree.innerHTML = '<div class="editor-empty">Could not load files.</div>';
+      }
+    }
+
+    // ── File viewer/editor ──
+    let currentFile = null;
+    let isEditing = false;
+
+    async function loadFile(filePath) {
+      // Mark active in tree
+      document.querySelectorAll('.file-tree-item').forEach(el => {
+        el.classList.toggle('active', el.dataset.path === filePath);
+      });
+
+      const panel = document.getElementById('editorPanel');
+      panel.innerHTML = '<div class="editor-empty">Loading...</div>';
+      currentFile = filePath;
+      isEditing = false;
+
+      try {
+        const res = await fetch(`/api/context/file?path=${encodeURIComponent(filePath)}`, {
+          headers: { 'x-editor-token': window._editorToken }
+        });
+        const data = await res.json();
+        renderViewer(filePath, data.content);
+      } catch (err) {
+        panel.innerHTML = '<div class="editor-empty">Could not load file.</div>';
+      }
+    }
+
+    function renderViewer(filePath, content) {
+      const panel = document.getElementById('editorPanel');
+      panel.innerHTML = `
+        <div class="file-editor-header">
+          <div class="file-editor-path">${filePath}</div>
+          <div class="editor-actions">
+            <button class="edit-btn" onclick="startEditing('${filePath}')">Edit</button>
+          </div>
+        </div>
+        <div class="file-content-view">${escapeHtml(content)}</div>
+      `;
+      panel._content = content;
+    }
+
+    function startEditing(filePath) {
+      const panel = document.getElementById('editorPanel');
+      const current = panel._content || '';
+      panel.innerHTML = `
+        <div class="file-editor-header">
+          <div class="file-editor-path">${filePath} <span style="color:var(--orange);margin-left:0.5rem;">editing</span></div>
+          <div class="editor-actions">
+            <button class="edit-btn cancel" onclick="loadFile('${filePath}')">Cancel</button>
+            <button class="edit-btn save" onclick="saveFile('${filePath}')">Save</button>
+          </div>
+        </div>
+        <textarea class="file-content-edit" id="fileEditArea">${escapeHtml(current)}</textarea>
+      `;
+      document.getElementById('fileEditArea').focus();
+    }
+
+    async function saveFile(filePath) {
+      const content = document.getElementById('fileEditArea').value;
+      try {
+        const res = await fetch('/api/context/file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-editor-token': window._editorToken
+          },
+          body: JSON.stringify({ path: filePath, content })
+        });
+        if (res.ok) {
+          showToast('File saved to context layer.', 'success');
+          loadFile(filePath);
+        } else {
+          showToast('Save failed. Check context service.', 'error');
+        }
+      } catch (err) {
+        showToast('Save failed. Check context service.', 'error');
+      }
+    }
+
+
+    function showNewFileForm() {
+      document.getElementById('newFileForm').classList.add('open');
+      setTimeout(() => document.getElementById('newFileName').focus(), 100);
+    }
+
+    function hideNewFileForm() {
+      document.getElementById('newFileForm').classList.remove('open');
+      document.getElementById('newFileName').value = '';
+    }
+
+    async function createNewFile() {
+      const section = document.getElementById('newFileSection').value;
+      let name = document.getElementById('newFileName').value.trim();
+      if (!name) return;
+      if (!name.endsWith('.md')) name += '.md';
+      const filePath = `${section}/${name}`;
+
+      try {
+        const res = await fetch('/api/context/file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-editor-token': window._editorToken
+          },
+          body: JSON.stringify({ path: filePath, content: `# ${name.replace('.md', '')}
+
+` })
+        });
+
+        if (res.ok) {
+          showToast(`Created ${filePath}`, 'success');
+          hideNewFileForm();
+          await loadFileTree();
+          loadFile(filePath);
+        } else {
+          showToast('Could not create file.', 'error');
+        }
+      } catch (err) {
+        showToast('Could not create file.', 'error');
+      }
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
 
     // ── Report Modal ──
     function openReport(idx) {
