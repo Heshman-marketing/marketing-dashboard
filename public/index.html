@@ -5,63 +5,38 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Operative Marketing OS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --navy: #061A3D;
-      --navy-mid: #0d2957;
-      --navy-light: #1a3a6e;
+      --navy: #f5f7fa;
+      --navy-mid: #ffffff;
+      --navy-light: #e8ecf2;
       --orange: #FC5000;
-      --orange-dim: rgba(252,80,0,0.15);
-      --white: #ffffff;
-      --off-white: #f4f5f8;
-      --muted: #8a9bb5;
-      --border: rgba(255,255,255,0.08);
-      --card-bg: rgba(255,255,255,0.04);
-      --green: #00e5a0;
-      --green-dim: rgba(0,229,160,0.12);
-      --red: #ff4d4d;
-      --red-dim: rgba(255,77,77,0.12);
-      --yellow: #ffc84a;
-      --yellow-dim: rgba(255,200,74,0.12);
+      --orange-dim: rgba(252,80,0,0.08);
+      --white: #1a2333;
+      --off-white: #2d3748;
+      --muted: #7a8999;
+      --border: rgba(0,0,0,0.08);
+      --card-bg: #ffffff;
+      --green: #00a870;
+      --green-dim: rgba(0,168,112,0.08);
+      --red: #e53e3e;
+      --red-dim: rgba(229,62,62,0.08);
+      --yellow: #d97706;
+      --yellow-dim: rgba(217,119,6,0.08);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       background: var(--navy);
       color: var(--white);
       min-height: 100vh;
       overflow-x: hidden;
     }
 
-    /* Grid background */
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image:
-        linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-      background-size: 40px 40px;
-      pointer-events: none;
-      z-index: 0;
-    }
 
-    /* Top glow */
-    body::after {
-      content: '';
-      position: fixed;
-      top: -200px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 800px;
-      height: 400px;
-      background: radial-gradient(ellipse, rgba(252,80,0,0.12) 0%, transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
 
     .wrap {
       position: relative;
@@ -109,7 +84,7 @@
     }
 
     .logo-title {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 700;
       font-size: 1rem;
       letter-spacing: 0.02em;
@@ -182,10 +157,11 @@
       position: relative;
       overflow: hidden;
       transition: border-color 0.2s;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
 
     .agent-card:hover {
-      border-color: rgba(255,255,255,0.15);
+      border-color: rgba(0,0,0,0.15);
     }
 
     .agent-card::before {
@@ -249,7 +225,7 @@
     .status-text.loading { color: var(--muted); }
 
     .agent-name {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 600;
       font-size: 0.9rem;
       color: var(--white);
@@ -277,6 +253,7 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
 
     .panel-header {
@@ -288,7 +265,7 @@
     }
 
     .panel-title {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 700;
       font-size: 0.95rem;
     }
@@ -388,7 +365,7 @@
       cursor: pointer;
       transition: background 0.15s;
       text-align: left;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
     .action-btn:hover { background: rgba(255,255,255,0.05); }
@@ -443,11 +420,11 @@
     .form-select,
     .form-textarea {
       width: 100%;
-      background: rgba(255,255,255,0.05);
+      background: #f8f9fb;
       border: 1px solid var(--border);
       border-radius: 8px;
       color: var(--white);
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.82rem;
       padding: 0.6rem 0.85rem;
       outline: none;
@@ -474,7 +451,7 @@
       border: none;
       border-radius: 8px;
       color: white;
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 600;
       font-size: 0.82rem;
       padding: 0.65rem 1rem;
@@ -512,7 +489,7 @@
     .competitor-card:hover .competitor-name { color: var(--green); }
 
     .competitor-name {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 600;
       font-size: 0.78rem;
       color: var(--white);
@@ -533,8 +510,9 @@
       position: fixed;
       bottom: 2rem;
       right: 2rem;
-      background: var(--navy-mid);
+      background: #ffffff;
       border: 1px solid var(--border);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       border-radius: 10px;
       padding: 0.9rem 1.25rem;
       font-size: 0.82rem;
@@ -589,7 +567,7 @@
     }
 
     .modal {
-      background: var(--navy-mid);
+      background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 16px;
       width: 100%;
@@ -615,7 +593,7 @@
     }
 
     .modal-title {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 700;
       font-size: 0.95rem;
     }
@@ -657,7 +635,7 @@
     .modal-body pre {
       white-space: pre-wrap;
       word-break: break-word;
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.82rem;
       line-height: 1.7;
       color: var(--off-white);
@@ -727,6 +705,7 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
 
     .file-tree-section {
@@ -766,6 +745,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
 
     .file-editor-header {
@@ -822,7 +802,7 @@
 
     .file-content-edit {
       flex: 1;
-      background: rgba(0,0,0,0.2);
+      background: #f8f9fb;
       border: none;
       outline: none;
       padding: 1.5rem;
@@ -862,7 +842,7 @@
     }
 
     .auth-box {
-      background: var(--navy-mid);
+      background: #ffffff;
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 2rem;
@@ -875,7 +855,7 @@
     .auth-overlay.open .auth-box { transform: translateY(0); }
 
     .auth-title {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 700;
       font-size: 1rem;
       margin-bottom: 0.4rem;
@@ -893,7 +873,7 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       color: var(--white);
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.9rem;
       padding: 0.7rem 1rem;
       outline: none;
@@ -1201,20 +1181,6 @@
             <div class="panel-title">Quick Actions</div>
           </div>
           <div class="action-list">
-            <button class="action-btn" onclick="window.open('https://operative-production-ed21.up.railway.app/context?agent=aos-nurture')">
-              <div class="action-icon orange">📋</div>
-              <div>
-                <div class="action-label">View AOS Context</div>
-                <div class="action-sub">Full ICP + positioning</div>
-              </div>
-            </button>
-            <button class="action-btn" onclick="window.open('https://operative-production-ed21.up.railway.app/context?agent=staq-prospecting')">
-              <div class="action-icon blue">📊</div>
-              <div>
-                <div class="action-label">View STAQ Context</div>
-                <div class="action-sub">Full ICP + positioning</div>
-              </div>
-            </button>
             <button class="action-btn" onclick="runCompetitor(null)">
               <div class="action-icon green">🔍</div>
               <div>
