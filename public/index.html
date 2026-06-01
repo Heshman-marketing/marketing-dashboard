@@ -30,7 +30,7 @@
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: var(--navy);
+      background: #eef0f4;
       color: var(--white);
       min-height: 100vh;
       overflow-x: hidden;
@@ -38,12 +38,22 @@
 
 
 
+    .page-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
     .wrap {
       position: relative;
       z-index: 1;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 2rem 4rem;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin: 1.5rem auto;
+      padding: 0 2rem 3rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
     }
 
     /* ── HEADER ── */
@@ -1409,6 +1419,7 @@
   </style>
 </head>
 <body>
+  <div class="page-container">
   <div class="wrap">
     <header>
       <div class="logo">
@@ -2429,5 +2440,6 @@
     setInterval(loadLearnings, 30000); // refresh learnings every 30s
     setInterval(loadContextHealth, 300000); // refresh health every 5 min
   </script>
+  </div><!-- end page-container -->
 </body>
 </html>
