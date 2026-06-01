@@ -1,6 +1,9 @@
 const express = require("express");
 const fetch = require("node-fetch");
 const path = require("path");
+const multer = require("multer");
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
 const app = express();
 app.use(express.json());
@@ -141,6 +144,123 @@ app.post("/api/auth", (req, res) => {
     res.json({ ok: true, token: EDITOR_PASSWORD });
   } else {
     res.status(401).json({ ok: false, error: "Invalid password" });
+  }
+});
+
+
+// ── File upload + Claude cleanup ──
+app.post("/api/context/upload", requireAuth, upload.single("file"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file provided" });
+
+  const { originalname, buffer, mimetype } = req.file;
+  let rawText = "";
+
+  // Extract text based on file type
+  try {
+    if (mimetype === "text/plain" || originalname.endsWith(".md") || originalname.endsWith(".txt")) {
+      rawText = buffer.toString("utf8");
+    } else if (originalname.endsWith(".html") || mimetype === "text/html") {
+      rawText = buffer.toString("utf8").replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ").trim();
+    } else {
+      // For docx/pdf — send raw base64 to Claude with document type
+      rawText = null;
+    }
+  } catch (err) {
+    return res.status(500).json({ error: "Could not extract text: " + err.message });
+  }
+
+  // Send to Claude for cleanup and formatting
+  try {
+    let messages;
+
+    if (rawText !== null) {
+      messages = [{
+        role: "user",
+        content: `You are formatting a document for Operative's marketing context layer. 
+        
+The context layer contains markdown files used by AI agents for positioning, ICP data, brand voice, and campaign learnings.
+
+Here is the raw content from a file called "${originalname}":
+
+---
+${rawText.slice(0, 8000)}
+---
+
+Clean this up and reformat it as a well-structured markdown context file that:
+- Has a clear H1 title
+- Uses H2 and H3 headings to organize sections
+- Removes any formatting artifacts, page numbers, headers/footers
+- Preserves all substantive content and data
+- Uses bullet points and tables where appropriate
+- Is ready to be used as a reference document by an AI agent
+
+Return ONLY the cleaned markdown content, no preamble.`
+      }];
+    } else {
+      // Send as base64 document (PDF or DOCX)
+      const base64 = buffer.toString("base64");
+      const mediaType = originalname.endsWith(".pdf") ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+      
+      messages = [{
+        role: "user",
+        content: [
+          {
+            type: "document",
+            source: { type: "base64", media_type: mediaType, data: base64 }
+          },
+          {
+            type: "text",
+            text: `You are formatting a document for Operative's marketing context layer.
+
+The context layer contains markdown files used by AI agents for positioning, ICP data, brand voice, and campaign learnings.
+
+Clean up and reformat the content of this document called "${originalname}" as a well-structured markdown context file that:
+- Has a clear H1 title
+- Uses H2 and H3 headings to organize sections
+- Removes any formatting artifacts, page numbers, headers/footers
+- Preserves all substantive content and data
+- Uses bullet points and tables where appropriate
+- Is ready to be used as a reference document by an AI agent
+
+Return ONLY the cleaned markdown content, no preamble.`
+          }
+        ]
+      }];
+    }
+
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        messages
+      })
+    });
+
+    const data = await r.json();
+    const cleaned = data.content?.[0]?.text || "";
+
+    if (!cleaned) return res.status(500).json({ error: "Claude returned no content" });
+
+    // Suggest filename from original
+    const suggestedName = originalname
+      .replace(/\.[^.]+$/, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "") + ".md";
+
+    res.json({ content: cleaned, suggestedName });
+
+  } catch (err) {
+    res.status(500).json({ error: "Claude processing failed: " + err.message });
   }
 });
 
