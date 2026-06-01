@@ -1068,6 +1068,95 @@
 
     @keyframes spin { to { transform: rotate(360deg); } }
 
+
+    /* ── CONTEXT HEALTH ── */
+    .health-bar {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2.5rem;
+    }
+
+    .health-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .health-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .health-icon.healthy { background: var(--green-dim); }
+    .health-icon.warning { background: var(--yellow-dim); }
+    .health-icon.stale { background: var(--red-dim); }
+    .health-icon.loading { background: rgba(0,0,0,0.04); }
+
+    .health-info { flex: 1; }
+
+    .health-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .health-value {
+      font-weight: 600;
+      font-size: 0.88rem;
+      color: var(--white);
+    }
+
+    .health-value.healthy { color: var(--green); }
+    .health-value.warning { color: var(--yellow); }
+    .health-value.stale { color: var(--red); }
+
+    .health-detail {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    .stale-files-list {
+      margin-top: 0.5rem;
+    }
+
+    .stale-file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.35rem 0;
+      font-size: 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stale-file-item:last-child { border-bottom: none; }
+
+    .stale-file-name {
+      font-family: 'DM Mono', monospace;
+      color: var(--white);
+    }
+
+    .stale-file-age {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--red);
+    }
+
   </style>
 </head>
 <body>
@@ -1111,7 +1200,7 @@
           <div class="status-dot"></div>
           <div class="status-text loading">Checking</div>
         </div>
-        <div class="agent-name">AOS Nurture Agent</div>
+        <div class="agent-name">AOS Prospecting Agent</div>
         <div class="agent-detail">Loading...</div>
       </div>
       <div class="agent-card loading">
@@ -1133,6 +1222,32 @@
     </div>
 
     <!-- Competitive Intel -->
+    <!-- Context Health -->
+    <div class="section-label">Context Layer Health</div>
+    <div class="health-bar" id="healthBar">
+      <div class="health-card">
+        <div class="health-icon loading">&#8226;&#8226;&#8226;</div>
+        <div class="health-info">
+          <div class="health-label">Global Files</div>
+          <div class="health-value">Checking</div>
+        </div>
+      </div>
+      <div class="health-card">
+        <div class="health-icon loading">&#8226;&#8226;&#8226;</div>
+        <div class="health-info">
+          <div class="health-label">Agent Files</div>
+          <div class="health-value">Checking</div>
+        </div>
+      </div>
+      <div class="health-card">
+        <div class="health-icon loading">&#8226;&#8226;&#8226;</div>
+        <div class="health-info">
+          <div class="health-label">Learnings</div>
+          <div class="health-value">Checking</div>
+        </div>
+      </div>
+    </div>
+
     <div class="section-label">Competitive Intelligence — Run Research</div>
     <div class="competitors-grid">
       <div class="competitor-card" onclick="runCompetitor('Boostr')">
@@ -1709,6 +1824,56 @@
     }
 
 
+
+    // ── Context health ──
+    async function loadContextHealth() {
+      try {
+        const res = await fetch('/api/context-health');
+        if (!res.ok) throw new Error('Failed');
+        const data = await res.json();
+        renderHealthBar(data);
+      } catch (err) {
+        document.getElementById('healthBar').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Could not load context health.</div>';
+      }
+    }
+
+    function renderHealthBar(data) {
+      const sections = [
+        { key: 'global', label: 'Global Files', maxAgeDays: 180 },
+        { key: 'agents', label: 'Agent Files', maxAgeDays: 180 },
+        { key: 'learnings', label: 'Learnings', maxAgeDays: 60 }
+      ];
+
+      const bar = document.getElementById('healthBar');
+      bar.innerHTML = sections.map(section => {
+        const files = data.sections[section.key] || [];
+        const stale = files.filter(f => f.stale);
+        const oldest = files.reduce((max, f) => f.ageDays > max ? f.ageDays : max, 0);
+        const status = stale.length === 0 ? 'healthy' : 'stale';
+        const icon = status === 'healthy' ? '&#10003;' : '&#9888;';
+        const valueText = status === 'healthy' ? 'Up to date' : `${stale.length} file${stale.length > 1 ? 's' : ''} stale`;
+        const detailText = files.length === 0 ? 'No files found' :
+          status === 'healthy' ? `${files.length} file${files.length > 1 ? 's' : ''}, last updated ${oldest === 0 ? 'today' : oldest + 'd ago'}` :
+          stale.map(f => f.name).join(', ');
+
+        return `
+          <div class="health-card" style="cursor:${stale.length ? 'pointer' : 'default'}" ${stale.length ? `onclick="showStaleFiles('${section.key}', ${JSON.stringify(stale).replace(/"/g, '&quot;')})"` : ''}>
+            <div class="health-icon ${status}">${icon}</div>
+            <div class="health-info">
+              <div class="health-label">${section.label}</div>
+              <div class="health-value ${status}">${valueText}</div>
+              <div class="health-detail">${detailText}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function showStaleFiles(section, files) {
+      const names = files.map(f => `${f.name} (${f.ageDays}d old)`).join(', ');
+      showToast(`Stale in ${section}: ${names}`, 'error');
+    }
+
     // ── Upload ──
     function showUploadPanel() {
       document.getElementById('editorPanel').style.display = 'none';
@@ -1836,11 +2001,13 @@
     function loadAll() {
       loadStatus();
       loadLearnings();
+      loadContextHealth();
     }
 
     loadAll();
     setInterval(loadStatus, 60000); // refresh status every 60s
     setInterval(loadLearnings, 30000); // refresh learnings every 30s
+    setInterval(loadContextHealth, 300000); // refresh health every 5 min
   </script>
 </body>
 </html>
