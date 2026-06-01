@@ -728,34 +728,48 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // ── Activity log (in-memory for session) ──
-    const activityLog = [];
+    // ── Learnings feed from context layer ──
+    async function loadLearnings() {
+      const feed = document.getElementById('activityFeed');
+      try {
+        const res = await fetch('/api/learnings');
+        if (!res.ok) throw new Error('Failed');
+        const entries = await res.json();
 
-    function addActivity(agent, text) {
-      const now = new Date();
-      const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      activityLog.unshift({ agent, text, time, date: now });
-      renderActivity();
+        if (!entries.length) {
+          feed.innerHTML = '<div class="empty-state">No learnings yet. Add one below or trigger a competitive research run.</div>';
+          return;
+        }
+
+        feed.innerHTML = entries.map(item => {
+          const agentKey = agentColor(item.agent);
+          return `
+            <div class="activity-item">
+              <div class="activity-bar ${agentKey}"></div>
+              <div class="activity-content">
+                <div class="activity-meta">
+                  <span class="activity-agent ${agentKey}">${item.agent}</span>
+                  <span class="activity-time">${item.date}</span>
+                </div>
+                <div class="activity-text">${item.note.slice(0, 160)}${item.note.length > 160 ? '...' : ''}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        feed.innerHTML = '<div class="empty-state">Could not load learnings. Check context service.</div>';
+      }
     }
 
-    function renderActivity() {
-      const feed = document.getElementById('activityFeed');
-      if (!activityLog.length) {
-        feed.innerHTML = '<div class="empty-state">No activity yet this session. Trigger an agent or add a learning to get started.</div>';
-        return;
-      }
-      feed.innerHTML = activityLog.slice(0, 20).map(item => `
-        <div class="activity-item">
-          <div class="activity-bar ${item.agent}"></div>
-          <div class="activity-content">
-            <div class="activity-meta">
-              <span class="activity-agent ${item.agent}">${formatAgentName(item.agent)}</span>
-              <span class="activity-time">${item.time}</span>
-            </div>
-            <div class="activity-text">${item.text}</div>
-          </div>
-        </div>
-      `).join('');
+    function agentColor(agent) {
+      if (!agent) return 'context';
+      const a = agent.toLowerCase();
+      if (a.includes('aos')) return 'aos';
+      if (a.includes('staq')) return 'staq';
+      if (a.includes('competitive') || a.includes('boostr') || a.includes('fattail') ||
+          a.includes('advendio') || a.includes('placements') || a.includes('wideorbit') ||
+          a.includes('mediagenix')) return 'competitive';
+      return 'context';
     }
 
     function formatAgentName(agent) {
@@ -853,8 +867,8 @@
 
         if (res.ok) {
           showToast('Learning saved to context layer.', 'success');
-          addActivity('context', `Learning added for ${agent}: "${note.slice(0, 60)}${note.length > 60 ? '...' : ''}"`);
           document.getElementById('learningNote').value = '';
+          setTimeout(loadLearnings, 500); // refresh feed after save
         } else {
           throw new Error('Save failed');
         }
@@ -881,11 +895,12 @@
     // ── Init ──
     function loadAll() {
       loadStatus();
+      loadLearnings();
     }
 
     loadAll();
     setInterval(loadStatus, 60000); // refresh status every 60s
-    renderActivity(); // show empty state initially
+    setInterval(loadLearnings, 30000); // refresh learnings every 30s
   </script>
 </body>
 </html>
