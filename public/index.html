@@ -90,16 +90,17 @@
     .logo-mark {
       width: 36px;
       height: 36px;
-      background: var(--orange);
       border-radius: 8px;
+      overflow: hidden;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 16px;
-      color: white;
-      letter-spacing: -0.5px;
+    }
+
+    .logo-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
     }
 
     .logo-text {
@@ -685,7 +686,7 @@
   <div class="wrap">
     <header>
       <div class="logo">
-        <div class="logo-mark">OP</div>
+        <div class="logo-mark"><img src="https://www.operative.com/wp-content/uploads/2023/03/operative-logomark@2x-e1680556738419.png" alt="Operative" /></div>
         <div class="logo-text">
           <div class="logo-title">Operative Marketing OS</div>
           <div class="logo-sub">AI Agent Dashboard</div>
