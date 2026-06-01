@@ -1329,6 +1329,83 @@
       font-size: 0.78rem;
     }
 
+
+    /* ── EMAIL METRICS ── */
+    .metrics-section {
+      margin-bottom: 2rem;
+    }
+
+    .metrics-group-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 0.75rem;
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .metric-email-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .metric-stats {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .metric-stat {
+      flex: 1;
+    }
+
+    .metric-value {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .metric-value.highlight { color: var(--orange); }
+
+    .metric-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .metric-card.not-found {
+      opacity: 0.4;
+    }
+
+    .metrics-loading {
+      padding: 2rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
   </style>
 </head>
 <body>
@@ -1352,7 +1429,7 @@
     <div class="nav-tabs">
       <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
       <button class="nav-tab" onclick="switchTab('context')">Context Editor</button>
-      <button class="nav-tab" onclick="switchTab('emails')">Email Outputs</button>
+      <button class="nav-tab" onclick="switchTab('emails')">Prospecting Emails</button>
     </div>
 
     <!-- Dashboard View -->
@@ -1578,6 +1655,11 @@
 
     <!-- Email Outputs View -->
     <div class="view" id="view-emails">
+      <!-- Metrics -->
+      <div id="emailMetricsSection">
+        <div class="metrics-loading">Loading email metrics...</div>
+      </div>
+
       <div class="email-viewer-layout">
         <!-- Contact List -->
         <div class="contact-list">
@@ -1803,6 +1885,60 @@
 
 
 
+
+    // ── Email Metrics ──
+    async function loadEmailMetrics() {
+      const section = document.getElementById('emailMetricsSection');
+      if (!section) return;
+
+      try {
+        const res = await fetch('/api/email-metrics');
+        const metrics = await res.json();
+
+        if (metrics.error) {
+          section.innerHTML = `<div class="metrics-loading">Could not load metrics: ${metrics.error}</div>`;
+          return;
+        }
+
+        const aos = metrics.filter(m => m.name.startsWith('AOS'));
+        const staq = metrics.filter(m => m.name.startsWith('STAQ'));
+
+        function renderGroup(items, label) {
+          return `
+            <div class="metrics-section">
+              <div class="metrics-group-label">${label}</div>
+              <div class="metrics-grid">
+                ${items.map(m => `
+                  <div class="metric-card ${m.found ? '' : 'not-found'}">
+                    <div class="metric-email-name">${m.name.replace('AOS Nurture ', '').replace('STAQ Nurture ', '')}</div>
+                    <div class="metric-stats">
+                      <div class="metric-stat">
+                        <div class="metric-value">${m.found ? m.sent.toLocaleString() : '--'}</div>
+                        <div class="metric-label">Sent</div>
+                      </div>
+                      <div class="metric-stat">
+                        <div class="metric-value highlight">${m.found ? m.openRate + '%' : '--'}</div>
+                        <div class="metric-label">Open Rate</div>
+                      </div>
+                      <div class="metric-stat">
+                        <div class="metric-value highlight">${m.found ? m.clickRate + '%' : '--'}</div>
+                        <div class="metric-label">CTR</div>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        section.innerHTML = renderGroup(aos, 'AOS Prospecting') + renderGroup(staq, 'STAQ Prospecting');
+
+      } catch (err) {
+        section.innerHTML = `<div class="metrics-loading">Could not load metrics.</div>`;
+      }
+    }
+
     // ── Email Output Viewer ──
     let currentEmailAgent = 'aos';
     let currentContact = null;
@@ -1894,6 +2030,7 @@
       if (tab === 'emails' && !window._emailContactsLoaded) {
         window._emailContactsLoaded = true;
         loadContacts('aos');
+        loadEmailMetrics();
       }
       if (tab === 'context') {
         if (!window._editorToken) {
