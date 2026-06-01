@@ -277,6 +277,67 @@ app.get("/api/context-health", async (req, res) => {
   }
 });
 
+
+// ── HubSpot email output viewer ──
+const HUBSPOT_API_KEY = process.env.HUBSPOT_API_KEY;
+
+// Get recent contacts with generated emails
+app.get("/api/email-outputs", async (req, res) => {
+  const { agent } = req.query; // 'aos' or 'staq'
+  if (!agent) return res.status(400).json({ error: "agent required" });
+
+  const isAOS = agent === "aos";
+  const properties = isAOS
+    ? ["firstname", "lastname", "email", "company", "jobtitle", "nurture_email_1", "nurture_email_2", "nurture_email_3"]
+    : ["firstname", "lastname", "email", "company", "jobtitle", "staq_email_1_body", "staq_email_2_body", "staq_email_3_body"];
+
+  const filterProperty = isAOS ? "nurture_email_1" : "staq_email_1_body";
+
+  try {
+    const r = await fetch("https://api.hubapi.com/crm/v3/objects/contacts/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${HUBSPOT_API_KEY}`
+      },
+      body: JSON.stringify({
+        filterGroups: [{
+          filters: [{
+            propertyName: filterProperty,
+            operator: "HAS_PROPERTY"
+          }]
+        }],
+        properties,
+        sorts: [{ propertyName: "lastmodifieddate", direction: "DESCENDING" }],
+        limit: 20
+      })
+    });
+
+    const data = await r.json();
+    const contacts = (data.results || []).map(c => ({
+      id: c.id,
+      firstname: c.properties.firstname || "",
+      lastname: c.properties.lastname || "",
+      email: c.properties.email || "",
+      company: c.properties.company || "",
+      jobtitle: c.properties.jobtitle || "",
+      emails: isAOS ? [
+        c.properties.nurture_email_1 || "",
+        c.properties.nurture_email_2 || "",
+        c.properties.nurture_email_3 || ""
+      ] : [
+        c.properties.staq_email_1_body || "",
+        c.properties.staq_email_2_body || "",
+        c.properties.staq_email_3_body || ""
+      ]
+    }));
+
+    res.json(contacts);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
