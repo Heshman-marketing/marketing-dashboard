@@ -360,10 +360,16 @@ app.get("/api/email-metrics", async (req, res) => {
         if (!r.ok) return { ...email, found: false };
         const data = await r.json();
 
-        const stats = data.stats || {};
-        const sent = stats.sent || 0;
-        const opened = stats.open || 0;
-        const clicked = stats.click || 0;
+        // HubSpot v3 stats can live in different places depending on email type
+        const stats = data.stats || data.counters || data.metrics || {};
+        const perf = data.performance || {};
+
+        const sent = stats.sent || stats.delivered || perf.sent || perf.delivered || 0;
+        const opened = stats.open || stats.opens || stats.uniqueOpens || perf.open || perf.opens || 0;
+        const clicked = stats.click || stats.clicks || stats.uniqueClicks || perf.click || perf.clicks || 0;
+
+        // Log raw for debugging
+        console.log(`[metrics] ${email.name} raw:`, JSON.stringify({ stats: data.stats, counters: data.counters, metrics: data.metrics, performance: data.performance }).slice(0, 300));
 
         return {
           name: email.name,
