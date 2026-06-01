@@ -352,8 +352,10 @@ app.get("/api/email-metrics", async (req, res) => {
 
   try {
     // Fetch statistics using correct integer array params
+    // startTimestamp is required — use 1 year ago
+    const startTimestamp = new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString();
     const idParams = emails.map(e => `emailIds=${e.id}`).join("&");
-    const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/statistics/list?${idParams}`, {
+    const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/statistics/list?${idParams}&startTimestamp=${encodeURIComponent(startTimestamp)}`, {
       headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
     });
 
