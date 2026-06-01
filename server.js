@@ -351,43 +351,50 @@ app.get("/api/email-metrics", async (req, res) => {
   ];
 
   try {
-    // Fetch statistics for all emails in one call
-    const idParams = emails.map(e => `emailId=${e.id}`).join("&");
-    const statsRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/statistics/list?${idParams}`, {
-      headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
-    });
+    // Fetch each email individually with statistics included
+    const metrics = await Promise.all(emails.map(async (email) => {
+      try {
+        const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}?includeStatistics=true`, {
+          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+        });
 
-    let statsMap = {};
-    if (statsRes.ok) {
-      const statsData = await statsRes.json();
-      console.log("[metrics] statistics/list raw:", JSON.stringify(statsData).slice(0, 600));
-      const results = statsData.results || statsData.emails || [];
-      results.forEach(r => {
-        statsMap[r.id || r.emailId] = r.stats || r.counters || r;
-      });
-    } else {
-      console.log("[metrics] statistics/list status:", statsRes.status);
-    }
+        if (!r.ok) {
+          console.log(`[metrics] ${email.name} status: ${r.status}`);
+          return { ...email, found: false };
+        }
 
-    const metrics = emails.map((email) => {
-      const stats = statsMap[email.id] || {};
-      const sent = stats.sent || stats.delivered || stats.numSent || 0;
-      const opened = stats.open || stats.opens || stats.uniqueOpens || stats.numOpened || 0;
-      const clicked = stats.click || stats.clicks || stats.uniqueClicks || stats.numClicked || 0;
+        const data = await r.json();
+        console.log(`[metrics] ${email.name} stats:`, JSON.stringify(data.stats || data.statistics || {}).slice(0, 300));
 
-      console.log(`[metrics] ${email.name}:`, JSON.stringify(stats).slice(0, 200));
+        const stats = data.stats || data.statistics || {};
+        const counters = stats.counters || stats;
+        const ratios = stats.ratios || {};
 
-      return {
-        name: email.name,
-        group: email.group,
-        found: true,
-        sent,
-        openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
-        clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
-        opened,
-        clicked
-      };
-    });
+        const sent = counters.sent || counters.delivered || 0;
+        const opened = counters.open || counters.opens || counters.uniqueOpens || 0;
+        const clicked = counters.click || counters.clicks || counters.uniqueClicks || 0;
+
+        // HubSpot sometimes returns ratios directly
+        const openRate = ratios.openRate || ratios.open ||
+          (sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0");
+        const clickRate = ratios.clickRate || ratios.click ||
+          (sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0");
+
+        return {
+          name: email.name,
+          group: email.group,
+          found: true,
+          sent,
+          openRate: typeof openRate === 'number' ? (openRate * 100).toFixed(1) : openRate,
+          clickRate: typeof clickRate === 'number' ? (clickRate * 100).toFixed(1) : clickRate,
+          opened,
+          clicked
+        };
+      } catch (err) {
+        console.log(`[metrics] ${email.name} error:`, err.message);
+        return { ...email, found: false };
+      }
+    }));
 
     res.json(metrics);
   } catch (err) {
