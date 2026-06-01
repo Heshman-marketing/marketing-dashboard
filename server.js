@@ -338,6 +338,55 @@ app.get("/api/email-outputs", async (req, res) => {
   }
 });
 
+
+// ── HubSpot email metrics ──
+app.get("/api/email-metrics", async (req, res) => {
+  const emailNames = [
+    "AOS Nurture Email 1",
+    "AOS Nurture Email 2",
+    "AOS Nurture Email 3",
+    "STAQ Nurture Email 1",
+    "STAQ Nurture Email 2",
+    "STAQ Nurture Email 3"
+  ];
+
+  try {
+    // Get all marketing emails
+    const r = await fetch("https://api.hubapi.com/marketing/v3/emails?limit=50&orderBy=-updatedAt", {
+      headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+    });
+
+    if (!r.ok) throw new Error(`HubSpot error: ${r.status}`);
+    const data = await r.json();
+    const emails = data.results || [];
+
+    // Filter to our named emails and extract stats
+    const metrics = emailNames.map(name => {
+      const email = emails.find(e => e.name === name);
+      if (!email) return { name, found: false };
+
+      const stats = email.stats || {};
+      const sent = stats.sent || 0;
+      const opened = stats.open || 0;
+      const clicked = stats.click || 0;
+
+      return {
+        name,
+        found: true,
+        sent,
+        openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
+        clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
+        opened,
+        clicked
+      };
+    });
+
+    res.json(metrics);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
