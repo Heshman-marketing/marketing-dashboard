@@ -27,7 +27,7 @@ function requireAuth(req, res, next) {
 app.get("/api/status", async (req, res) => {
   const agents = [
     { id: "context", name: "Context Service", url: CONTEXT_SERVICE_URL },
-    { id: "aos", name: "AOS Nurture Agent", url: AOS_AGENT_URL },
+    { id: "aos", name: "AOS Prospecting Agent", url: AOS_AGENT_URL },
     { id: "staq", name: "STAQ Prospecting Agent", url: STAQ_AGENT_URL },
     { id: "competitive", name: "Competitive Intel Agent", url: COMPETITIVE_AGENT_URL },
   ];
@@ -261,6 +261,19 @@ Return ONLY the cleaned markdown content, no preamble.`
 
   } catch (err) {
     res.status(500).json({ error: "Claude processing failed: " + err.message });
+  }
+});
+
+
+// Context health check
+app.get("/api/context-health", async (req, res) => {
+  try {
+    const r = await fetch(`${CONTEXT_SERVICE_URL}/context-health`);
+    if (!r.ok) throw new Error("Failed");
+    const data = await r.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
