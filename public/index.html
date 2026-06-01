@@ -1539,7 +1539,6 @@
     async function runCompetitor(competitor) {
       const label = competitor || 'All competitors';
       showToast(`Starting research: ${label}...`, 'info');
-      addActivity('competitive', `Research triggered: ${label}`);
 
       try {
         const res = await fetch('/api/run-competitive', {
@@ -1549,7 +1548,6 @@
         });
         const data = await res.json();
         showToast(`${label} research queued. Check back in a few minutes.`, 'success');
-        addActivity('competitive', `Research queued for: ${label}. Results will appear in context layer.`);
       } catch (err) {
         showToast('Failed to trigger research. Check agent status.', 'error');
       }
