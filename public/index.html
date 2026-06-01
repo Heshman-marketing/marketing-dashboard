@@ -995,6 +995,99 @@
 
     .new-file-cancel:hover { border-color: var(--red); color: var(--red); }
 
+
+    /* ── UPLOAD ── */
+    .upload-zone {
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin: 1rem;
+      background: transparent;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: var(--orange);
+      background: var(--orange-dim);
+    }
+
+    .upload-zone-icon {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-zone-text {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+
+    .upload-zone-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .upload-preview {
+      display: none;
+      flex-direction: column;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .upload-preview.open { display: flex; }
+
+    .upload-preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 1rem;
+    }
+
+    .upload-preview-fields {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      flex: 1;
+    }
+
+    .upload-preview-content {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex: 1;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.75rem;
+      line-height: 1.8;
+      color: var(--off-white);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .processing-state {
+      padding: 3rem 1.5rem;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .processing-spinner {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--border);
+      border-top-color: var(--orange);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
   </style>
 </head>
 <body>
@@ -1177,6 +1270,54 @@
         <!-- Editor Panel -->
         <div class="file-editor-panel" id="editorPanel">
           <div class="editor-empty">Select a file from the left to view or edit it.</div>
+        </div>
+
+        <!-- Upload Panel (hidden by default, shown instead of editor) -->
+        <div class="file-editor-panel" id="uploadPanel" style="display:none;">
+          <div class="file-editor-header">
+            <div class="file-editor-path">Upload a file</div>
+            <button class="edit-btn cancel" onclick="hideUploadPanel()">Cancel</button>
+          </div>
+          <!-- Drop zone -->
+          <div id="uploadDropZone">
+            <div class="upload-zone" id="dropZone"
+              onclick="document.getElementById('fileInput').click()"
+              ondragover="handleDragOver(event)"
+              ondragleave="handleDragLeave(event)"
+              ondrop="handleDrop(event)">
+              <div class="upload-zone-icon">&#8593;</div>
+              <div class="upload-zone-text">Drop a file here or click to browse</div>
+              <div class="upload-zone-sub">PDF, Word, HTML, TXT, Markdown</div>
+            </div>
+            <input type="file" id="fileInput" style="display:none"
+              accept=".pdf,.docx,.html,.txt,.md"
+              onchange="handleFileSelect(event)" />
+          </div>
+          <!-- Processing state -->
+          <div id="uploadProcessing" style="display:none;">
+            <div class="processing-state">
+              <div class="processing-spinner"></div>
+              <div>Claude is cleaning up and formatting the file...</div>
+            </div>
+          </div>
+          <!-- Preview -->
+          <div class="upload-preview" id="uploadPreview">
+            <div class="upload-preview-header">
+              <div class="upload-preview-fields">
+                <select class="new-file-input" id="uploadSection" style="width:110px;flex-shrink:0;">
+                  <option value="global">global/</option>
+                  <option value="agents">agents/</option>
+                  <option value="learnings">learnings/</option>
+                </select>
+                <input class="new-file-input" id="uploadFileName" placeholder="filename.md" style="flex:1;" />
+              </div>
+              <div class="editor-actions">
+                <button class="edit-btn cancel" onclick="resetUpload()">Re-upload</button>
+                <button class="edit-btn save" onclick="saveUploadedFile()">Save to Context</button>
+              </div>
+            </div>
+            <div class="upload-preview-content" id="uploadPreviewContent"></div>
+          </div>
         </div>
       </div>
     </div><!-- end view-context -->
@@ -1466,6 +1607,9 @@
               <button class="new-file-cancel" onclick="hideNewFileForm()">Cancel</button>
             </div>
           </div>
+          <div class="file-tree-new">
+            <button class="new-file-btn" onclick="showUploadPanel()">&#8593; Upload File</button>
+          </div>
         `;
         tree.innerHTML = html;
       } catch (err) {
@@ -1596,6 +1740,112 @@
 
     function escapeHtml(str) {
       return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+
+    // ── Upload ──
+    function showUploadPanel() {
+      document.getElementById('editorPanel').style.display = 'none';
+      document.getElementById('uploadPanel').style.display = 'flex';
+      resetUpload();
+    }
+
+    function hideUploadPanel() {
+      document.getElementById('uploadPanel').style.display = 'none';
+      document.getElementById('editorPanel').style.display = 'flex';
+    }
+
+    function resetUpload() {
+      document.getElementById('uploadDropZone').style.display = 'block';
+      document.getElementById('uploadProcessing').style.display = 'none';
+      document.getElementById('uploadPreview').classList.remove('open');
+      document.getElementById('fileInput').value = '';
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('dropZone').classList.add('dragover');
+    }
+
+    function handleDragLeave(e) {
+      document.getElementById('dropZone').classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('dropZone').classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) processUpload(file);
+    }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) processUpload(file);
+    }
+
+    async function processUpload(file) {
+      document.getElementById('uploadDropZone').style.display = 'none';
+      document.getElementById('uploadProcessing').style.display = 'block';
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/context/upload', {
+          method: 'POST',
+          headers: { 'x-editor-token': window._editorToken },
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showToast(data.error || 'Upload failed.', 'error');
+          resetUpload();
+          return;
+        }
+
+        document.getElementById('uploadProcessing').style.display = 'none';
+        document.getElementById('uploadFileName').value = data.suggestedName;
+        document.getElementById('uploadPreviewContent').textContent = data.content;
+        document.getElementById('uploadPreview').classList.add('open');
+        window._uploadedContent = data.content;
+
+      } catch (err) {
+        showToast('Upload failed. Check connection.', 'error');
+        resetUpload();
+      }
+    }
+
+    async function saveUploadedFile() {
+      const section = document.getElementById('uploadSection').value;
+      let name = document.getElementById('uploadFileName').value.trim();
+      if (!name) { showToast('Enter a filename.', 'error'); return; }
+      if (!name.endsWith('.md')) name += '.md';
+      const filePath = `${section}/${name}`;
+      const content = window._uploadedContent;
+
+      try {
+        const res = await fetch('/api/context/file', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-editor-token': window._editorToken
+          },
+          body: JSON.stringify({ path: filePath, content })
+        });
+
+        if (res.ok) {
+          showToast(`Saved to ${filePath}`, 'success');
+          hideUploadPanel();
+          await loadFileTree();
+          loadFile(filePath);
+        } else {
+          showToast('Save failed.', 'error');
+        }
+      } catch (err) {
+        showToast('Save failed.', 'error');
+      }
     }
 
     // ── Report Modal ──
