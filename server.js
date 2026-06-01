@@ -352,8 +352,8 @@ app.get("/api/email-metrics", async (req, res) => {
 
   try {
     // Fetch statistics for all emails in one call
-    const ids = emails.map(e => e.id).join(",");
-    const statsRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/statistics/list?emailIds=${ids}`, {
+    const idParams = emails.map(e => `emailId=${e.id}`).join("&");
+    const statsRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/statistics/list?${idParams}`, {
       headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
     });
 
