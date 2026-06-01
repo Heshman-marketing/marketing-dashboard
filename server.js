@@ -351,30 +351,34 @@ app.get("/api/email-metrics", async (req, res) => {
   ];
 
   try {
-    const metrics = await Promise.all(emails.map(async (email) => {
+    // Fetch statistics for all emails in one call
+    const ids = emails.map(e => e.id).join(",");
+    const statsRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/statistics/list?emailIds=${ids}`, {
+      headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+    });
+
+    let statsMap = {};
+    if (statsRes.ok) {
+      const statsData = await statsRes.json();
+      console.log("[metrics] statistics/list raw:", JSON.stringify(statsData).slice(0, 600));
+      const results = statsData.results || statsData.emails || [];
+      results.forEach(r => {
+        statsMap[r.id || r.emailId] = r.stats || r.counters || r;
+      });
+    } else {
+      console.log("[metrics] statistics/list status:", statsRes.status);
+    }
+
+    const metrics = emails.map(async (email) => {
       try {
-        // Use the marketing email statistics endpoint
-        const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}/statistics/histogram?interval=WEEK`, {
-          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
-        });
-
-        // Also fetch the aggregate stats
-        const r2 = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}/statistics/total`, {
-          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
-        });
-
+        const stats = statsMap[email.id] || {};
         let sent = 0, opened = 0, clicked = 0;
 
-        if (r2.ok) {
-          const data2 = await r2.json();
-          console.log(`[metrics] ${email.name} total:`, JSON.stringify(data2).slice(0, 400));
-          const c = data2.counters || data2 || {};
-          sent = c.sent || c.delivered || c.numSent || 0;
-          opened = c.open || c.opens || c.numOpened || c.uniqueOpens || 0;
-          clicked = c.click || c.clicks || c.numClicked || c.uniqueClicks || 0;
-        } else {
-          console.log(`[metrics] ${email.name} total status: ${r2.status}`);
-        }
+        sent = stats.sent || stats.delivered || stats.numSent || 0;
+        opened = stats.open || stats.opens || stats.uniqueOpens || stats.numOpened || 0;
+        clicked = stats.click || stats.clicks || stats.uniqueClicks || stats.numClicked || 0;
+
+        console.log(`[metrics] ${email.name}:`, JSON.stringify(stats).slice(0, 200));
 
         return {
           name: email.name,
