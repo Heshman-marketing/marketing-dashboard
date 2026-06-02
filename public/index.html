@@ -126,6 +126,9 @@
     .email-body{flex:1;overflow-y:auto;padding:1.25rem;font-size:.82rem;line-height:1.7;color:var(--text-2)}
     .email-empty,.contact-loading{padding:2.5rem 1.25rem;text-align:center;color:var(--muted);font-size:.78rem}
     .context-layout{display:grid;grid-template-columns:210px 1fr;gap:1rem;min-height:600px}
+    #editorCol{display:flex;flex-direction:column;}
+    #editorCol .file-editor-panel{flex:1;display:none;}
+    #editorCol .file-editor-panel.active-panel{display:flex;}
     .file-tree{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
     .file-tree-section{border-bottom:1px solid var(--border-light)}.file-tree-section:last-child{border-bottom:none}
     .file-tree-header{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:.625rem 1rem .375rem}
@@ -624,7 +627,8 @@
       <div class="page-header"><div><div class="page-title">Context Editor</div><div class="page-subtitle">View and edit the intelligence files every agent reads from</div></div></div>
       <div class="context-layout">
         <div class="file-tree" id="fileTree"><div class="editor-empty">Loading files...</div></div>
-        <div class="file-editor-panel" id="editorPanel"><div class="editor-empty">Select a file from the left to view or edit it.</div></div>
+        <div id="editorCol" style="position:relative;min-height:600px;">
+        <div class="file-editor-panel active-panel" id="editorPanel" style="height:100%;"><div class="editor-empty">Select a file from the left to view or edit it.</div></div>
         <div class="file-editor-panel" id="linkPanel" style="display:none;">
           <div class="file-editor-header">
             <div class="file-editor-path">Link an article</div>
@@ -678,6 +682,7 @@
             </div>
             <div class="upload-preview-content" id="uploadPreviewContent"></div>
           </div>
+        </div>
         </div>
       </div>
     </div>
@@ -801,8 +806,9 @@
   function showNewFileForm(){document.getElementById('newFileForm').classList.add('open');setTimeout(()=>document.getElementById('newFileName').focus(),100);}
   function hideNewFileForm(){document.getElementById('newFileForm').classList.remove('open');document.getElementById('newFileName').value='';}
   async function createNewFile(){const sec=document.getElementById('newFileSection').value;let n=document.getElementById('newFileName').value.trim();if(!n)return;if(!n.endsWith('.md'))n+='.md';const p=sec+'/'+n;try{const r=await fetch('/api/context/file',{method:'POST',headers:{'Content-Type':'application/json','x-editor-token':window._editorToken},body:JSON.stringify({path:p,content:'# '+n.replace('.md','')+'\n\n'})});if(r.ok){showToast('Created '+p,'success');hideNewFileForm();await loadFileTree();loadFile(p);}else showToast('Could not create file.','error');}catch{showToast('Could not create file.','error');}}
-  function showUploadPanel(){document.getElementById('editorPanel').style.display='none';document.getElementById('linkPanel').style.display='none';document.getElementById('uploadPanel').style.display='flex';resetUpload();}
-  function hideUploadPanel(){document.getElementById('uploadPanel').style.display='none';document.getElementById('linkPanel').style.display='none';document.getElementById('editorPanel').style.display='flex';}
+  function setActivePanel(id){['editorPanel','uploadPanel','linkPanel'].forEach(p=>{const el=document.getElementById(p);if(el){el.classList.toggle('active-panel',p===id);}});}
+  function showUploadPanel(){setActivePanel('uploadPanel');resetUpload();}
+  function hideUploadPanel(){setActivePanel('editorPanel');}
   function resetUpload(){document.getElementById('uploadDropZone').style.display='block';document.getElementById('uploadProcessing').style.display='none';document.getElementById('uploadPreview').classList.remove('open');document.getElementById('fileInput').value='';}
   function handleDragOver(e){e.preventDefault();document.getElementById('dropZone').classList.add('dragover');}
   function handleDragLeave(){document.getElementById('dropZone').classList.remove('dragover');}
@@ -875,17 +881,8 @@
   renderReviewQueue();loadAll();
   setInterval(loadStatus,60000);setInterval(loadLearnings,30000);setInterval(loadContextHealth,300000);
 
-  function showLinkPanel(){
-    document.getElementById('editorPanel').style.display='none';
-    document.getElementById('uploadPanel').style.display='none';
-    document.getElementById('linkPanel').style.display='flex';
-    resetLinkPanel();
-    setTimeout(()=>document.getElementById('linkUrl').focus(),100);
-  }
-  function hideLinkPanel(){
-    document.getElementById('linkPanel').style.display='none';
-    document.getElementById('editorPanel').style.display='flex';
-  }
+  function showLinkPanel(){setActivePanel('linkPanel');resetLinkPanel();setTimeout(()=>document.getElementById('linkUrl').focus(),100);}
+  function hideLinkPanel(){setActivePanel('editorPanel');}
   function resetLinkPanel(){
     document.getElementById('linkFetchZone').style.display='block';
     document.getElementById('linkProcessing').style.display='none';
