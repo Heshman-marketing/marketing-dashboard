@@ -371,42 +371,40 @@ app.get("/api/email-metrics", async (req, res) => {
         return { ...email, found: false };
       }
 
-      // Try each campaign ID until one returns valid stats
-      let statsData = null;
+      // Fetch all campaigns and sum their counters for accurate totals
+      let totalSent = 0, totalOpened = 0, totalClicked = 0;
+      let found = false;
+
       for (const campaignId of campaignIds) {
         const statsRes = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${campaignId}`, {
           headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
         });
         if (statsRes.ok) {
           const data = await statsRes.json();
-          // Pick the one with the most sends (most likely the real send campaign)
-          if (!statsData || (data.counters?.sent || 0) > (statsData.counters?.sent || 0)) {
-            statsData = data;
-          }
+          const counters = data.counters || {};
+          totalSent += counters.sent || 0;
+          totalOpened += counters.open || counters.opens || 0;
+          totalClicked += counters.click || counters.clicks || 0;
+          found = true;
         }
       }
 
-      if (!statsData) {
-        console.log(`[metrics] ${email.name} no valid campaign found`);
+      if (!found) {
+        console.log(`[metrics] ${email.name} no valid campaigns found`);
         return { ...email, found: false };
       }
 
-      console.log(`[metrics] ${email.name} campaign data:`, JSON.stringify(statsData).slice(0, 300));
-
-      const counters = statsData.counters || {};
-      const sent = counters.sent || counters.delivered || 0;
-      const opened = counters.open || counters.opens || 0;
-      const clicked = counters.click || counters.clicks || 0;
+      console.log(`[metrics] ${email.name} totals: sent=${totalSent} open=${totalOpened} click=${totalClicked}`);
 
       return {
         name: email.name,
         group: email.group,
         found: true,
-        sent,
-        openRate: sent > 0 ? ((opened / sent) * 100).toFixed(1) : "0.0",
-        clickRate: sent > 0 ? ((clicked / sent) * 100).toFixed(1) : "0.0",
-        opened,
-        clicked
+        sent: totalSent,
+        openRate: totalSent > 0 ? ((totalOpened / totalSent) * 100).toFixed(1) : "0.0",
+        clickRate: totalSent > 0 ? ((totalClicked / totalSent) * 100).toFixed(1) : "0.0",
+        opened: totalOpened,
+        clicked: totalClicked
       };
     }));
 
