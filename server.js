@@ -415,6 +415,40 @@ app.get("/api/email-metrics", async (req, res) => {
   }
 });
 
+
+// ── Context for Marketing Brain ──
+app.get("/api/context-for-brain", async (req, res) => {
+  try {
+    // Fetch global context + all agent contexts
+    const [globalRes, aosRes, staqRes, learningsRes] = await Promise.all([
+      fetch(`${CONTEXT_SERVICE_URL}/file?path=global/operative-products.md`),
+      fetch(`${CONTEXT_SERVICE_URL}/file?path=agents/aos-nurture.md`),
+      fetch(`${CONTEXT_SERVICE_URL}/file?path=agents/staq-prospecting.md`),
+      fetch(`${CONTEXT_SERVICE_URL}/learnings-list`)
+    ]);
+
+    const parts = [];
+    if (globalRes.ok) { const d = await globalRes.json(); parts.push(d.content || ''); }
+    if (aosRes.ok) { const d = await aosRes.json(); parts.push(d.content || ''); }
+    if (staqRes.ok) { const d = await staqRes.json(); parts.push(d.content || ''); }
+    if (learningsRes.ok) {
+      const entries = await learningsRes.json();
+      const recent = entries.slice(0, 5).map(e => `${e.date} — ${e.agent}: ${e.note.slice(0, 200)}`).join('
+');
+      if (recent) parts.push('RECENT LEARNINGS:
+' + recent);
+    }
+
+    res.json({ context: parts.join('
+
+---
+
+') });
+  } catch (err) {
+    res.json({ context: '' });
+  }
+});
+
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
