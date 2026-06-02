@@ -371,8 +371,7 @@ app.get("/api/email-metrics", async (req, res) => {
         return { ...email, found: false };
       }
 
-      // Fetch all campaigns and sum their counters for accurate totals
-      let totalSent = 0, totalOpened = 0, totalClicked = 0;
+      let totalSent = 0, totalDelivered = 0, totalOpened = 0, totalClicked = 0;
       let found = false;
 
       for (const campaignId of campaignIds) {
@@ -383,6 +382,7 @@ app.get("/api/email-metrics", async (req, res) => {
           const data = await statsRes.json();
           const counters = data.counters || {};
           totalSent += counters.sent || 0;
+          totalDelivered += counters.delivered || 0;
           totalOpened += counters.open || counters.opens || 0;
           totalClicked += counters.click || counters.clicks || 0;
           found = true;
@@ -394,15 +394,16 @@ app.get("/api/email-metrics", async (req, res) => {
         return { ...email, found: false };
       }
 
-      console.log(`[metrics] ${email.name} totals: sent=${totalSent} open=${totalOpened} click=${totalClicked}`);
+      const denominator = totalDelivered || totalSent;
+      console.log(`[metrics] ${email.name} totals: sent=${totalSent} delivered=${totalDelivered} open=${totalOpened} click=${totalClicked}`);
 
       return {
         name: email.name,
         group: email.group,
         found: true,
         sent: totalSent,
-        openRate: totalSent > 0 ? ((totalOpened / totalSent) * 100).toFixed(1) : "0.0",
-        clickRate: totalSent > 0 ? ((totalClicked / totalSent) * 100).toFixed(1) : "0.0",
+        openRate: denominator > 0 ? ((totalOpened / denominator) * 100).toFixed(1) : "0.0",
+        clickRate: denominator > 0 ? ((totalClicked / denominator) * 100).toFixed(1) : "0.0",
         opened: totalOpened,
         clicked: totalClicked
       };
