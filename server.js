@@ -433,17 +433,11 @@ app.get("/api/context-for-brain", async (req, res) => {
     if (staqRes.ok) { const d = await staqRes.json(); parts.push(d.content || ''); }
     if (learningsRes.ok) {
       const entries = await learningsRes.json();
-      const recent = entries.slice(0, 5).map(e => `${e.date} — ${e.agent}: ${e.note.slice(0, 200)}`).join('
-');
-      if (recent) parts.push('RECENT LEARNINGS:
-' + recent);
+      const recent = entries.slice(0, 5).map(e => e.date + ' - ' + e.agent + ': ' + e.note.slice(0, 200)).join('\n');
+      if (recent) parts.push('RECENT LEARNINGS:\n' + recent);
     }
 
-    res.json({ context: parts.join('
-
----
-
-') });
+    res.json({ context: parts.join('\n\n---\n\n') });
   } catch (err) {
     res.json({ context: '' });
   }
