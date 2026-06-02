@@ -364,25 +364,33 @@ app.get("/api/email-metrics", async (req, res) => {
 
       const emailData = await emailRes.json();
       const campaignIds = emailData.allEmailCampaignIds || [];
-      const campaignId = campaignIds[0] || emailData.primaryEmailCampaignId || emailData.emailCampaignGroupId;
       console.log(`[metrics] ${email.name} allEmailCampaignIds: ${JSON.stringify(campaignIds)}`);
 
-      if (!campaignId) {
-        console.log(`[metrics] ${email.name} no campaign ID found`);
+      if (!campaignIds.length) {
+        console.log(`[metrics] ${email.name} no campaign IDs found`);
         return { ...email, found: false };
       }
 
-      // Step 2: Get campaign stats via legacy campaigns API
-      const statsRes = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${campaignId}`, {
-        headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
-      });
+      // Try each campaign ID until one returns valid stats
+      let statsData = null;
+      for (const campaignId of campaignIds) {
+        const statsRes = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${campaignId}`, {
+          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` }
+        });
+        if (statsRes.ok) {
+          const data = await statsRes.json();
+          // Pick the one with the most sends (most likely the real send campaign)
+          if (!statsData || (data.counters?.sent || 0) > (statsData.counters?.sent || 0)) {
+            statsData = data;
+          }
+        }
+      }
 
-      if (!statsRes.ok) {
-        console.log(`[metrics] ${email.name} campaign status: ${statsRes.status}`);
+      if (!statsData) {
+        console.log(`[metrics] ${email.name} no valid campaign found`);
         return { ...email, found: false };
       }
 
-      const statsData = await statsRes.json();
       console.log(`[metrics] ${email.name} campaign data:`, JSON.stringify(statsData).slice(0, 300));
 
       const counters = statsData.counters || {};
