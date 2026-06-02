@@ -8,381 +8,420 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --navy: #f5f7fa;
-      --navy-mid: #ffffff;
-      --navy-light: #e8ecf2;
+      --bg: #f0f2f5;
+      --surface: #ffffff;
+      --surface-2: #f8f9fb;
+      --border: #e4e7ed;
+      --border-light: #eef0f4;
+      --text: #1a2333;
+      --text-2: #4a5568;
+      --muted: #8a96a8;
       --orange: #FC5000;
       --orange-dim: rgba(252,80,0,0.08);
-      --white: #1a2333;
-      --off-white: #2d3748;
-      --muted: #7a8999;
-      --border: rgba(0,0,0,0.08);
-      --card-bg: #ffffff;
+      --orange-mid: rgba(252,80,0,0.15);
       --green: #00a870;
       --green-dim: rgba(0,168,112,0.08);
-      --red: #e53e3e;
-      --red-dim: rgba(229,62,62,0.08);
+      --blue: #2563eb;
+      --blue-dim: rgba(37,99,235,0.08);
       --yellow: #d97706;
       --yellow-dim: rgba(217,119,6,0.08);
+      --red: #dc2626;
+      --red-dim: rgba(220,38,38,0.08);
+      --purple: #7c3aed;
+      --purple-dim: rgba(124,58,237,0.08);
+      --teal: #0891b2;
+      --teal-dim: rgba(8,145,178,0.08);
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Plus Jakarta Sans', sans-serif;
-      background: #eef0f4;
-      color: var(--white);
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      overflow-x: hidden;
     }
 
-
-
-    .page-container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 0 2rem;
+    /* ── LAYOUT ── */
+    .app {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      grid-template-rows: 60px 1fr;
+      min-height: 100vh;
     }
 
-    .wrap {
-      position: relative;
-      z-index: 1;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      margin: 1.5rem auto;
-      padding: 0 2rem 3rem;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      overflow: hidden;
-    }
-
-    /* ── HEADER ── */
-    header {
+    /* ── TOPBAR ── */
+    .topbar {
+      grid-column: 1 / -1;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 2rem 0 2.5rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2.5rem;
+      padding: 0 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
-    .logo {
+    .topbar-left {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.875rem;
     }
 
-    .logo-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .logo-mark img {
-      width: 100%;
-      height: 100%;
+    .logo-img {
+      width: 28px;
+      height: 28px;
       object-fit: contain;
     }
 
-    .logo-text {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .logo-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
+    .logo-name {
       font-weight: 700;
-      font-size: 1rem;
-      letter-spacing: 0.02em;
-      line-height: 1;
+      font-size: 0.9rem;
+      letter-spacing: -0.01em;
+      color: var(--text);
     }
 
-    .logo-sub {
-      font-size: 0.7rem;
-      color: var(--muted);
+    .logo-tag {
       font-family: 'DM Mono', monospace;
-      letter-spacing: 0.08em;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
-      margin-top: 3px;
+      color: var(--muted);
+      margin-left: 0.25rem;
     }
 
-    .header-right {
+    .topbar-right {
       display: flex;
       align-items: center;
       gap: 1rem;
     }
 
-    .last-updated {
+    .topbar-time {
       font-family: 'DM Mono', monospace;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--muted);
-      letter-spacing: 0.05em;
-    }
-
-    .refresh-btn {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      color: var(--muted);
-      padding: 0.4rem 0.9rem;
-      border-radius: 6px;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
-      cursor: pointer;
-      transition: all 0.2s;
       letter-spacing: 0.04em;
     }
 
-    .refresh-btn:hover {
-      border-color: var(--orange);
-      color: var(--orange);
+    .topbar-refresh {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.04em;
+      padding: 0.3rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.15s;
     }
+
+    .topbar-refresh:hover { border-color: var(--orange); color: var(--orange); }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 1.25rem 0;
+      overflow-y: auto;
+    }
+
+    .sidebar-section {
+      margin-bottom: 0.25rem;
+    }
+
+    .sidebar-section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.5rem 1.25rem 0.25rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      padding: 0.5rem 1.25rem;
+      cursor: pointer;
+      transition: all 0.12s;
+      border-left: 2px solid transparent;
+      color: var(--text-2);
+      font-size: 0.8rem;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .nav-item:hover { background: var(--bg); color: var(--text); }
+
+    .nav-item.active {
+      color: var(--orange);
+      border-left-color: var(--orange);
+      background: var(--orange-dim);
+    }
+
+    .nav-item-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      flex-shrink: 0;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-weight: 500;
+    }
+
+    .badge-live { background: var(--green-dim); color: var(--green); }
+    .badge-soon { background: var(--yellow-dim); color: var(--yellow); }
+    .badge-new { background: var(--orange-dim); color: var(--orange); }
+
+    .nav-divider {
+      height: 1px;
+      background: var(--border-light);
+      margin: 0.5rem 1.25rem;
+    }
+
+    /* ── MAIN CONTENT ── */
+    .main {
+      overflow-y: auto;
+      padding: 1.5rem;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .page-subtitle {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    /* ── STAT CARDS ── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.25rem;
+      box-shadow: var(--shadow);
+    }
+
+    .stat-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+
+    .stat-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .stat-sub span { color: var(--green); font-weight: 600; }
 
     /* ── SECTION LABEL ── */
     .section-label {
       font-family: 'DM Mono', monospace;
-      font-size: 0.68rem;
-      letter-spacing: 0.12em;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--orange);
-      margin-bottom: 1rem;
+      margin-bottom: 0.75rem;
     }
 
     /* ── AGENT GRID ── */
     .agent-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 1rem;
-      margin-bottom: 2.5rem;
+      gap: 0.875rem;
+      margin-bottom: 1.5rem;
     }
 
     .agent-card {
-      background: var(--card-bg);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
+      border-radius: var(--radius);
+      padding: 1rem 1.125rem;
+      box-shadow: var(--shadow);
       position: relative;
       overflow: hidden;
-      transition: border-color 0.2s;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      transition: box-shadow 0.15s;
     }
 
-    .agent-card:hover {
-      border-color: rgba(0,0,0,0.15);
-    }
+    .agent-card:hover { box-shadow: var(--shadow-md); }
 
     .agent-card::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 2px;
-      background: var(--border);
-      transition: background 0.3s;
+      height: 3px;
     }
 
-    .agent-card.online::before { background: var(--green); }
-    .agent-card.offline::before { background: var(--red); }
-    .agent-card.loading::before {
-      background: linear-gradient(90deg, transparent, var(--orange), transparent);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
+    .agent-card.status-online::before { background: var(--green); }
+    .agent-card.status-offline::before { background: var(--red); }
+    .agent-card.status-soon::before { background: var(--yellow); }
+    .agent-card.status-planned::before { background: var(--border); }
 
     .agent-status-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 0.75rem;
+      margin-bottom: 0.625rem;
     }
 
-    .status-dot {
-      width: 7px;
-      height: 7px;
+    .agent-dot {
+      width: 6px;
+      height: 6px;
       border-radius: 50%;
-      background: var(--muted);
     }
 
-    .status-dot.online {
-      background: var(--green);
-      box-shadow: 0 0 6px var(--green);
-      animation: pulse 2s infinite;
-    }
+    .agent-dot.online { background: var(--green); box-shadow: 0 0 0 2px var(--green-dim); animation: pulse 2s infinite; }
+    .agent-dot.offline { background: var(--red); }
+    .agent-dot.soon { background: var(--yellow); }
+    .agent-dot.planned { background: var(--border); }
 
-    .status-dot.offline { background: var(--red); }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    .status-text {
+    .agent-status-text {
       font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       letter-spacing: 0.06em;
       text-transform: uppercase;
     }
 
-    .status-text.online { color: var(--green); }
-    .status-text.offline { color: var(--red); }
-    .status-text.loading { color: var(--muted); }
+    .agent-status-text.online { color: var(--green); }
+    .agent-status-text.offline { color: var(--red); }
+    .agent-status-text.soon { color: var(--yellow); }
+    .agent-status-text.planned { color: var(--muted); }
 
     .agent-name {
-      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 600;
-      font-size: 0.9rem;
-      color: var(--white);
-      margin-bottom: 0.3rem;
+      font-size: 0.82rem;
+      color: var(--text);
+      margin-bottom: 0.2rem;
       line-height: 1.3;
     }
 
     .agent-detail {
-      font-size: 0.75rem;
+      font-size: 0.71rem;
       color: var(--muted);
-      line-height: 1.5;
+      line-height: 1.4;
     }
 
-    /* ── MAIN GRID ── */
-    .main-grid {
+    /* ── TWO COL GRID ── */
+    .two-col {
       display: grid;
-      grid-template-columns: 1fr 340px;
-      gap: 1.5rem;
+      grid-template-columns: 1fr 320px;
+      gap: 1rem;
       margin-bottom: 1.5rem;
     }
 
-    /* ── ACTIVITY FEED ── */
+    /* ── PANEL ── */
     .panel {
-      background: var(--card-bg);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
     }
 
     .panel-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid var(--border);
     }
 
     .panel-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 700;
-      font-size: 0.95rem;
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: var(--text);
     }
 
-    .panel-body {
+    .panel-action {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.04em;
+      color: var(--orange);
+      cursor: pointer;
+      border: none;
+      background: none;
       padding: 0;
     }
 
-    .activity-item {
+    .panel-body { padding: 1.25rem; }
+
+    /* ── CONTEXT HEALTH ── */
+    .health-grid {
       display: grid;
-      grid-template-columns: 3px 1fr;
-      gap: 1rem;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      transition: background 0.15s;
-      align-items: stretch;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
     }
 
-    .activity-item:last-child { border-bottom: none; }
-    .activity-item:hover { background: rgba(255,255,255,0.02); }
-
-    .activity-bar {
-      border-radius: 2px;
-      align-self: stretch;
-      min-height: 32px;
-    }
-
-    .activity-bar.aos { background: var(--orange); }
-    .activity-bar.staq { background: #4a9eff; }
-    .activity-bar.competitive { background: var(--green); }
-    .activity-bar.context { background: var(--yellow); }
-
-    .activity-content {}
-
-    .activity-meta {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 0.2rem;
-    }
-
-    .activity-agent {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 1px 6px;
-      border-radius: 3px;
-    }
-
-    .activity-agent.aos { background: var(--orange-dim); color: var(--orange); }
-    .activity-agent.staq { background: rgba(74,158,255,0.12); color: #4a9eff; }
-    .activity-agent.competitive { background: var(--green-dim); color: var(--green); }
-    .activity-agent.context { background: var(--yellow-dim); color: var(--yellow); }
-
-    .activity-time {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--muted);
-    }
-
-    .activity-text {
-      font-size: 0.82rem;
-      color: var(--off-white);
-      line-height: 1.5;
-    }
-
-    .empty-state {
-      padding: 3rem 1.5rem;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-
-    /* ── SIDEBAR ── */
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    /* ── QUICK ACTIONS ── */
-    .action-list {
-      padding: 0.5rem;
-    }
-
-    .action-btn {
-      width: 100%;
+    .health-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.875rem 1rem;
+      box-shadow: var(--shadow);
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      background: transparent;
-      border: none;
-      border-radius: 8px;
-      color: var(--white);
-      cursor: pointer;
-      transition: background 0.15s;
-      text-align: left;
-      font-family: 'Plus Jakarta Sans', sans-serif;
     }
 
-    .action-btn:hover { background: rgba(255,255,255,0.05); }
-
-    .action-icon {
-      width: 32px;
-      height: 32px;
+    .health-icon {
+      width: 34px;
+      height: 34px;
       border-radius: 8px;
       display: flex;
       align-items: center;
@@ -391,104 +430,43 @@
       flex-shrink: 0;
     }
 
-    .action-icon.orange { background: var(--orange-dim); }
-    .action-icon.blue { background: rgba(74,158,255,0.12); }
-    .action-icon.green { background: var(--green-dim); }
-
-    .action-label {
-      font-size: 0.82rem;
-      font-weight: 500;
-      color: var(--white);
-      line-height: 1;
-      margin-bottom: 2px;
-    }
-
-    .action-sub {
-      font-size: 0.7rem;
-      color: var(--muted);
-    }
-
-    /* ── ADD LEARNING ── */
-    .learning-form {
-      padding: 1.25rem 1.5rem;
-    }
-
-    .form-group {
-      margin-bottom: 0.75rem;
-    }
-
-    .form-label {
+    .health-label {
       font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--muted);
-      display: block;
-      margin-bottom: 0.4rem;
+      margin-bottom: 1px;
     }
 
-    .form-select,
-    .form-textarea {
-      width: 100%;
-      background: #f8f9fb;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--white);
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.82rem;
-      padding: 0.6rem 0.85rem;
-      outline: none;
-      transition: border-color 0.2s;
-      appearance: none;
-    }
-
-    .form-select:focus,
-    .form-textarea:focus {
-      border-color: var(--orange);
-    }
-
-    .form-textarea {
-      resize: vertical;
-      min-height: 80px;
-      line-height: 1.5;
-    }
-
-    .form-select option { background: var(--navy-mid); }
-
-    .submit-btn {
-      width: 100%;
-      background: var(--orange);
-      border: none;
-      border-radius: 8px;
-      color: white;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+    .health-value {
       font-weight: 600;
       font-size: 0.82rem;
-      padding: 0.65rem 1rem;
-      cursor: pointer;
-      transition: opacity 0.2s;
-      letter-spacing: 0.02em;
     }
 
-    .submit-btn:hover { opacity: 0.85; }
-    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .health-value.healthy { color: var(--green); }
+    .health-value.stale { color: var(--red); }
+    .health-value.loading { color: var(--muted); }
 
-    /* ── COMPETITORS ROW ── */
-    .competitors-grid {
+    .health-detail { font-size: 0.7rem; color: var(--muted); margin-top: 1px; }
+
+    /* ── COMPETITOR GRID ── */
+    .competitor-grid {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: 0.75rem;
+      gap: 0.625rem;
       margin-bottom: 1.5rem;
     }
 
     .competitor-card {
-      background: var(--card-bg);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem;
+      border-radius: 8px;
+      padding: 0.75rem 0.875rem;
       text-align: center;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s;
+      box-shadow: var(--shadow);
     }
 
     .competitor-card:hover {
@@ -496,298 +474,474 @@
       background: var(--green-dim);
     }
 
-    .competitor-card:hover .competitor-name { color: var(--green); }
-
     .competitor-name {
-      font-family: 'Plus Jakarta Sans', sans-serif;
       font-weight: 600;
-      font-size: 0.78rem;
-      color: var(--white);
-      margin-bottom: 0.25rem;
-      transition: color 0.2s;
+      font-size: 0.75rem;
+      color: var(--text);
+      transition: color 0.15s;
     }
+
+    .competitor-card:hover .competitor-name { color: var(--green); }
 
     .competitor-action {
       font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       color: var(--muted);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
-    }
-
-    /* ── TOAST ── */
-    .toast {
-      position: fixed;
-      bottom: 2rem;
-      right: 2rem;
-      background: #ffffff;
-      border: 1px solid var(--border);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      border-radius: 10px;
-      padding: 0.9rem 1.25rem;
-      font-size: 0.82rem;
-      color: var(--white);
-      z-index: 100;
-      transform: translateY(100px);
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-      max-width: 320px;
-    }
-
-    .toast.show {
-      transform: translateY(0);
-      opacity: 1;
-    }
-
-    .toast.success { border-color: var(--green); }
-    .toast.error { border-color: var(--red); }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 1024px) {
-      .agent-grid { grid-template-columns: repeat(2, 1fr); }
-      .main-grid { grid-template-columns: 1fr; }
-      .competitors-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-
-    @media (max-width: 600px) {
-      .agent-grid { grid-template-columns: 1fr; }
-      .competitors-grid { grid-template-columns: repeat(2, 1fr); }
-      header { flex-direction: column; align-items: flex-start; gap: 1rem; }
-    }
-
-    /* ── MODAL ── */
-    .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      backdrop-filter: blur(4px);
-      z-index: 200;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.2s;
-    }
-
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: all;
-    }
-
-    .modal {
-      background: #ffffff;
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      width: 100%;
-      max-width: 780px;
-      max-height: 80vh;
-      display: flex;
-      flex-direction: column;
-      transform: translateY(20px);
-      transition: transform 0.2s;
-    }
-
-    .modal-overlay.open .modal {
-      transform: translateY(0);
-    }
-
-    .modal-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .modal-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 700;
-      font-size: 0.95rem;
-    }
-
-    .modal-meta {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      color: var(--muted);
       margin-top: 2px;
     }
 
-    .modal-close {
-      background: transparent;
-      border: 1px solid var(--border);
+    /* ── LEARNINGS FEED ── */
+    .learning-item {
+      display: flex;
+      gap: 0.875rem;
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .learning-item:last-child { border-bottom: none; }
+    .learning-item:hover { background: var(--bg); }
+
+    .learning-bar {
+      width: 3px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      align-self: stretch;
+      min-height: 28px;
+    }
+
+    .learning-bar.competitive { background: var(--green); }
+    .learning-bar.aos { background: var(--orange); }
+    .learning-bar.staq { background: var(--blue); }
+    .learning-bar.context { background: var(--yellow); }
+
+    .learning-agent {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      padding: 1px 5px;
+      border-radius: 3px;
+      margin-right: 0.4rem;
+    }
+
+    .learning-agent.competitive { background: var(--green-dim); color: var(--green); }
+    .learning-agent.aos { background: var(--orange-dim); color: var(--orange); }
+    .learning-agent.staq { background: var(--blue-dim); color: var(--blue); }
+    .learning-agent.context { background: var(--yellow-dim); color: var(--yellow); }
+
+    .learning-date {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
       color: var(--muted);
+    }
+
+    .learning-text {
+      font-size: 0.78rem;
+      color: var(--text-2);
+      line-height: 1.5;
+      margin-top: 3px;
+    }
+
+    .learning-hint {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      color: var(--orange);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-top: 3px;
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .action-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1.25rem;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: background 0.12s;
+      text-align: left;
+    }
+
+    .action-btn:hover { background: var(--bg); }
+
+    .action-icon {
       width: 30px;
       height: 30px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 1rem;
+      border-radius: 7px;
       display: flex;
       align-items: center;
       justify-content: center;
+      font-size: 13px;
       flex-shrink: 0;
-      transition: all 0.15s;
     }
 
-    .modal-close:hover {
-      border-color: var(--orange);
-      color: var(--orange);
-    }
+    .action-label { font-size: 0.78rem; font-weight: 500; color: var(--text); line-height: 1; margin-bottom: 2px; }
+    .action-sub { font-size: 0.68rem; color: var(--muted); }
 
-    .modal-body {
-      overflow-y: auto;
-      padding: 1.5rem;
-      flex: 1;
-    }
+    /* ── ADD LEARNING FORM ── */
+    .form-group { margin-bottom: 0.625rem; }
 
-    .modal-body pre {
-      white-space: pre-wrap;
-      word-break: break-word;
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.82rem;
-      line-height: 1.7;
-      color: var(--off-white);
-    }
-
-    .activity-item {
-      cursor: pointer;
-    }
-
-    .activity-item:hover .activity-text {
-      color: var(--white);
-    }
-
-    .view-hint {
+    .form-label {
       font-family: 'DM Mono', monospace;
       font-size: 0.6rem;
-      color: var(--orange);
-      letter-spacing: 0.05em;
-      margin-top: 4px;
-      text-transform: uppercase;
-    }
-
-
-    /* ── NAV TABS ── */
-    .nav-tabs {
-      display: flex;
-      gap: 0.25rem;
-      margin-bottom: 2rem;
-      border-bottom: 1px solid var(--border);
-      padding-bottom: 0;
-    }
-
-    .nav-tab {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.07em;
       text-transform: uppercase;
       color: var(--muted);
-      padding: 0.6rem 1.1rem;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
-      transition: all 0.15s;
-      background: none;
-      border-top: none;
-      border-left: none;
-      border-right: none;
+      display: block;
+      margin-bottom: 0.3rem;
     }
 
-    .nav-tab:hover { color: var(--white); }
-    .nav-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
+    .form-select, .form-textarea, .form-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 0.78rem;
+      padding: 0.5rem 0.75rem;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none;
+    }
 
-    /* ── VIEWS ── */
-    .view { display: none; }
-    .view.active { display: block; }
+    .form-select:focus, .form-textarea:focus, .form-input:focus { border-color: var(--orange); }
+    .form-textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+    .form-select option { background: var(--surface); }
+
+    .submit-btn {
+      width: 100%;
+      background: var(--orange);
+      border: none;
+      border-radius: 7px;
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      font-size: 0.78rem;
+      padding: 0.55rem 1rem;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+
+    .submit-btn:hover { opacity: 0.85; }
+    .submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* ── PROSPECTING EMAILS VIEW ── */
+    .metrics-section { margin-bottom: 1.5rem; }
+
+    .metrics-group-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 0.625rem;
+    }
+
+    .metrics-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .metric-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.875rem 1rem;
+      box-shadow: var(--shadow);
+    }
+
+    .metric-email-name {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.625rem;
+    }
+
+    .metric-stats { display: flex; gap: 1rem; }
+    .metric-stat { flex: 1; }
+
+    .metric-value {
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .metric-value.accent { color: var(--orange); }
+
+    .metric-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .metric-card.not-found { opacity: 0.35; }
+
+    /* ── EMAIL VIEWER ── */
+    .email-viewer {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 1rem;
+      min-height: 500px;
+    }
+
+    .contact-list-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .contact-list-header {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .contact-list-title { font-weight: 600; font-size: 0.8rem; }
+
+    .agent-toggle {
+      display: flex;
+      gap: 2px;
+      background: var(--bg);
+      border-radius: 5px;
+      padding: 2px;
+    }
+
+    .agent-toggle-btn {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border-radius: 3px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .agent-toggle-btn.active { background: var(--surface); color: var(--orange); box-shadow: var(--shadow); }
+
+    .contact-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-light);
+      cursor: pointer;
+      transition: background 0.12s;
+      border-left: 2px solid transparent;
+    }
+
+    .contact-item:last-child { border-bottom: none; }
+    .contact-item:hover { background: var(--bg); }
+    .contact-item.active { border-left-color: var(--orange); background: var(--orange-dim); }
+
+    .contact-name { font-weight: 600; font-size: 0.78rem; color: var(--text); margin-bottom: 1px; }
+    .contact-meta { font-size: 0.68rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    .email-panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .email-panel-header { padding: 0.875rem 1.25rem; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .email-contact-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
+    .email-contact-meta { font-size: 0.72rem; color: var(--muted); }
+
+    .email-tabs {
+      display: flex;
+      gap: 0.25rem;
+      padding: 0.625rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .email-tab {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.625rem;
+      border-radius: 5px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .email-tab.active { background: var(--orange); border-color: var(--orange); color: white; }
+    .email-tab:hover:not(.active) { border-color: var(--orange); color: var(--orange); }
+
+    .email-body { flex: 1; overflow-y: auto; padding: 1.25rem; font-size: 0.82rem; line-height: 1.7; color: var(--text-2); }
+    .email-empty, .contact-loading { padding: 2.5rem 1.25rem; text-align: center; color: var(--muted); font-size: 0.78rem; }
 
     /* ── CONTEXT EDITOR ── */
     .context-layout {
       display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 1.5rem;
+      grid-template-columns: 210px 1fr;
+      gap: 1rem;
       min-height: 600px;
     }
 
     .file-tree {
-      background: var(--card-bg);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      box-shadow: var(--shadow);
     }
 
-    .file-tree-section {
-      border-bottom: 1px solid var(--border);
-    }
-
+    .file-tree-section { border-bottom: 1px solid var(--border-light); }
     .file-tree-section:last-child { border-bottom: none; }
 
     .file-tree-header {
       font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--orange);
-      padding: 0.75rem 1rem 0.5rem;
+      padding: 0.625rem 1rem 0.375rem;
     }
 
     .file-tree-item {
       display: flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.5rem 1rem;
+      padding: 0.4rem 1rem;
       cursor: pointer;
-      font-size: 0.78rem;
+      font-size: 0.75rem;
       color: var(--muted);
-      transition: all 0.15s;
+      transition: all 0.12s;
       border-left: 2px solid transparent;
     }
 
-    .file-tree-item:hover { color: var(--white); background: rgba(255,255,255,0.03); }
-    .file-tree-item.active { color: var(--white); border-left-color: var(--orange); background: rgba(252,80,0,0.06); }
+    .file-tree-item:hover { color: var(--text); background: var(--bg); }
+    .file-tree-item.active { color: var(--text); border-left-color: var(--orange); background: var(--orange-dim); }
+
+    .file-tree-new { padding: 0.5rem; border-top: 1px solid var(--border-light); }
+
+    .new-file-btn {
+      width: 100%;
+      background: transparent;
+      border: 1px dashed var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 0.375rem;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .new-file-btn:hover { border-color: var(--orange); color: var(--orange); }
+
+    .new-file-form { padding: 0.5rem; border-top: 1px solid var(--border-light); display: none; }
+    .new-file-form.open { display: block; }
+
+    .new-file-input {
+      width: 100%;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.68rem;
+      padding: 0.35rem 0.6rem;
+      outline: none;
+      margin-bottom: 0.375rem;
+      transition: border-color 0.15s;
+      appearance: none;
+    }
+
+    .new-file-input:focus { border-color: var(--orange); }
+
+    .new-file-actions { display: flex; gap: 0.3rem; }
+
+    .new-file-create {
+      flex: 1;
+      background: var(--orange);
+      border: none;
+      border-radius: 4px;
+      color: white;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      padding: 0.35rem;
+      cursor: pointer;
+    }
+
+    .new-file-cancel {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+      font-size: 0.62rem;
+      padding: 0.35rem 0.5rem;
+      cursor: pointer;
+    }
 
     .file-editor-panel {
-      background: var(--card-bg);
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 12px;
+      border-radius: var(--radius);
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      box-shadow: var(--shadow);
     }
 
     .file-editor-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem 1.5rem;
+      padding: 0.875rem 1.25rem;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
 
     .file-editor-path {
       font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: var(--muted);
-      letter-spacing: 0.04em;
     }
 
-    .editor-actions {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
+    .editor-actions { display: flex; gap: 0.375rem; align-items: center; }
 
     .edit-btn {
       font-family: 'DM Mono', monospace;
-      font-size: 0.68rem;
-      letter-spacing: 0.05em;
-      padding: 0.35rem 0.8rem;
-      border-radius: 6px;
+      font-size: 0.62rem;
+      letter-spacing: 0.04em;
+      padding: 0.3rem 0.7rem;
+      border-radius: 5px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: all 0.12s;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--muted);
@@ -799,43 +953,196 @@
     .edit-btn.cancel:hover { border-color: var(--red); color: var(--red); }
 
     .file-content-view {
-      padding: 1.5rem;
+      padding: 1.25rem;
       overflow-y: auto;
       flex: 1;
       font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       line-height: 1.8;
-      color: var(--off-white);
+      color: var(--text-2);
       white-space: pre-wrap;
       word-break: break-word;
     }
 
     .file-content-edit {
       flex: 1;
-      background: #f8f9fb;
+      background: var(--surface-2);
       border: none;
       outline: none;
-      padding: 1.5rem;
+      padding: 1.25rem;
       font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       line-height: 1.8;
-      color: var(--off-white);
+      color: var(--text);
       resize: none;
       width: 100%;
     }
 
-    .editor-empty {
-      padding: 3rem 1.5rem;
+    .editor-empty { padding: 3rem 1.25rem; text-align: center; color: var(--muted); font-size: 0.78rem; }
+
+    /* ── UPLOAD ── */
+    .upload-zone {
+      border: 1px dashed var(--border);
+      border-radius: 8px;
+      padding: 1.5rem;
       text-align: center;
-      color: var(--muted);
-      font-size: 0.82rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin: 0.75rem;
     }
 
-    /* ── AUTH MODAL ── */
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--orange); background: var(--orange-dim); }
+    .upload-zone-icon { font-size: 1.25rem; margin-bottom: 0.375rem; }
+    .upload-zone-text { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.2rem; }
+    .upload-zone-sub { font-family: 'DM Mono', monospace; font-size: 0.58rem; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+
+    .upload-preview { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+    .upload-preview.open { display: flex; }
+
+    .upload-preview-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.875rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 0.75rem;
+    }
+
+    .upload-preview-fields { display: flex; gap: 0.625rem; align-items: center; flex: 1; }
+    .upload-preview-content { padding: 1.25rem; overflow-y: auto; flex: 1; font-family: 'DM Mono', monospace; font-size: 0.7rem; line-height: 1.8; color: var(--text-2); white-space: pre-wrap; word-break: break-word; }
+
+    .processing-state { padding: 2.5rem 1.25rem; text-align: center; color: var(--muted); }
+    .processing-spinner { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 0.75rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── PLACEHOLDER VIEWS ── */
+    .coming-soon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .coming-soon-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 1.25rem;
+    }
+
+    .coming-soon-title {
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .coming-soon-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      max-width: 380px;
+      line-height: 1.6;
+      margin-bottom: 1.5rem;
+    }
+
+    .coming-soon-features {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .coming-soon-feature {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.625rem 1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      text-align: left;
+      box-shadow: var(--shadow);
+    }
+
+    .feature-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .coming-soon-feature-text { font-size: 0.78rem; color: var(--text-2); }
+
+    /* ── INBOUND LEADS ── */
+    .leads-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .leads-table th {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.5rem 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface-2);
+    }
+
+    .leads-table td {
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      border-bottom: 1px solid var(--border-light);
+      vertical-align: middle;
+    }
+
+    .leads-table tr:last-child td { border-bottom: none; }
+    .leads-table tr:hover td { background: var(--bg); }
+
+    .lead-score {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      font-weight: 700;
+      font-size: 0.72rem;
+    }
+
+    .lead-score.high { background: var(--green-dim); color: var(--green); }
+    .lead-score.mid { background: var(--yellow-dim); color: var(--yellow); }
+    .lead-score.low { background: var(--red-dim); color: var(--red); }
+
+    .lead-tag {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.58rem;
+      padding: 2px 6px;
+      border-radius: 3px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .tag-aos { background: var(--orange-dim); color: var(--orange); }
+    .tag-staq { background: var(--blue-dim); color: var(--blue); }
+    .tag-both { background: var(--purple-dim); color: var(--purple); }
+    .tag-ms { background: var(--teal-dim); color: var(--teal); }
+
+    /* ── AUTH OVERLAY ── */
     .auth-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.5);
       backdrop-filter: blur(4px);
       z-index: 300;
       display: flex;
@@ -846,807 +1153,1053 @@
       transition: opacity 0.2s;
     }
 
-    .auth-overlay.open {
-      opacity: 1;
-      pointer-events: all;
-    }
+    .auth-overlay.open { opacity: 1; pointer-events: all; }
 
     .auth-box {
-      background: #ffffff;
+      background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 2rem;
+      border-radius: 14px;
+      padding: 1.75rem;
       width: 100%;
-      max-width: 360px;
-      transform: translateY(20px);
+      max-width: 340px;
+      box-shadow: var(--shadow-md);
+      transform: translateY(16px);
       transition: transform 0.2s;
     }
 
     .auth-overlay.open .auth-box { transform: translateY(0); }
-
-    .auth-title {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      margin-bottom: 0.4rem;
-    }
-
-    .auth-sub {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-    }
+    .auth-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .auth-sub { font-size: 0.75rem; color: var(--muted); margin-bottom: 1.25rem; }
+    .auth-error { font-size: 0.72rem; color: var(--red); margin-bottom: 0.625rem; display: none; }
 
     .auth-input {
       width: 100%;
-      background: rgba(255,255,255,0.05);
+      background: var(--surface-2);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--white);
+      border-radius: 7px;
+      color: var(--text);
       font-family: 'Plus Jakarta Sans', sans-serif;
-      font-size: 0.9rem;
-      padding: 0.7rem 1rem;
+      font-size: 0.88rem;
+      padding: 0.625rem 0.875rem;
       outline: none;
-      margin-bottom: 1rem;
-      transition: border-color 0.2s;
+      margin-bottom: 0.875rem;
+      transition: border-color 0.15s;
     }
 
     .auth-input:focus { border-color: var(--orange); }
 
-    .auth-error {
-      font-size: 0.75rem;
-      color: var(--red);
-      margin-bottom: 0.75rem;
-      display: none;
-    }
-
-
-    .file-tree-new {
-      padding: 0.75rem 1rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .new-file-btn {
-      width: 100%;
-      background: transparent;
-      border: 1px dashed var(--border);
-      border-radius: 6px;
-      color: var(--muted);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      padding: 0.5rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .new-file-btn:hover {
-      border-color: var(--orange);
-      color: var(--orange);
-    }
-
-    .new-file-form {
-      padding: 0.75rem 1rem;
-      border-top: 1px solid var(--border);
-      display: none;
-    }
-
-    .new-file-form.open { display: block; }
-
-    .new-file-input {
-      width: 100%;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--white);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.72rem;
-      padding: 0.4rem 0.7rem;
-      outline: none;
-      margin-bottom: 0.4rem;
-      transition: border-color 0.2s;
-    }
-
-    .new-file-input:focus { border-color: var(--orange); }
-
-    .new-file-actions {
-      display: flex;
-      gap: 0.4rem;
-    }
-
-    .new-file-create {
-      flex: 1;
-      background: var(--orange);
-      border: none;
-      border-radius: 5px;
-      color: white;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.04em;
-      padding: 0.4rem;
-      cursor: pointer;
-      transition: opacity 0.15s;
-    }
-
-    .new-file-create:hover { opacity: 0.85; }
-
-    .new-file-cancel {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 5px;
-      color: var(--muted);
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      padding: 0.4rem 0.6rem;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-
-    .new-file-cancel:hover { border-color: var(--red); color: var(--red); }
-
-
-    /* ── UPLOAD ── */
-    .upload-zone {
-      border: 1px dashed var(--border);
-      border-radius: 10px;
-      padding: 2rem;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      margin: 1rem;
-      background: transparent;
-    }
-
-    .upload-zone:hover, .upload-zone.dragover {
-      border-color: var(--orange);
-      background: var(--orange-dim);
-    }
-
-    .upload-zone-icon {
-      font-size: 1.5rem;
-      margin-bottom: 0.5rem;
-    }
-
-    .upload-zone-text {
-      font-size: 0.78rem;
-      color: var(--muted);
-      margin-bottom: 0.25rem;
-    }
-
-    .upload-zone-sub {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.62rem;
-      color: var(--muted);
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-    }
-
-    .upload-preview {
-      display: none;
-      flex-direction: column;
-      flex: 1;
-      overflow: hidden;
-    }
-
-    .upload-preview.open { display: flex; }
-
-    .upload-preview-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-      gap: 1rem;
-    }
-
-    .upload-preview-fields {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      flex: 1;
-    }
-
-    .upload-preview-content {
-      padding: 1.5rem;
-      overflow-y: auto;
-      flex: 1;
-      font-family: 'DM Mono', monospace;
-      font-size: 0.75rem;
-      line-height: 1.8;
-      color: var(--off-white);
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .processing-state {
-      padding: 3rem 1.5rem;
-      text-align: center;
-      color: var(--muted);
-    }
-
-    .processing-spinner {
-      width: 32px;
-      height: 32px;
-      border: 2px solid var(--border);
-      border-top-color: var(--orange);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-
-    /* ── CONTEXT HEALTH ── */
-    .health-bar {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin-bottom: 2.5rem;
-    }
-
-    .health-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .health-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 10px;
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 200;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.1rem;
+      padding: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      width: 100%;
+      max-width: 760px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow-md);
+      transform: translateY(16px);
+      transition: transform 0.2s;
+    }
+
+    .modal-overlay.open .modal { transform: translateY(0); }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
       flex-shrink: 0;
     }
 
-    .health-icon.healthy { background: var(--green-dim); }
-    .health-icon.warning { background: var(--yellow-dim); }
-    .health-icon.stale { background: var(--red-dim); }
-    .health-icon.loading { background: rgba(0,0,0,0.04); }
+    .modal-title { font-weight: 700; font-size: 0.88rem; }
+    .modal-meta { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); margin-top: 1px; }
 
-    .health-info { flex: 1; }
-
-    .health-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.2rem;
-    }
-
-    .health-value {
-      font-weight: 600;
-      font-size: 0.88rem;
-      color: var(--white);
-    }
-
-    .health-value.healthy { color: var(--green); }
-    .health-value.warning { color: var(--yellow); }
-    .health-value.stale { color: var(--red); }
-
-    .health-detail {
-      font-size: 0.72rem;
-      color: var(--muted);
-      margin-top: 1px;
-    }
-
-    .stale-files-list {
-      margin-top: 0.5rem;
-    }
-
-    .stale-file-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.35rem 0;
-      font-size: 0.75rem;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .stale-file-item:last-child { border-bottom: none; }
-
-    .stale-file-name {
-      font-family: 'DM Mono', monospace;
-      color: var(--white);
-    }
-
-    .stale-file-age {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.68rem;
-      color: var(--red);
-    }
-
-
-    /* ── EMAIL OUTPUT VIEWER ── */
-    .email-viewer-layout {
-      display: grid;
-      grid-template-columns: 280px 1fr;
-      gap: 1.5rem;
-      min-height: 600px;
-    }
-
-    .contact-list {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-
-    .contact-list-header {
-      padding: 1rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .contact-list-title {
-      font-weight: 600;
-      font-size: 0.85rem;
-    }
-
-    .agent-toggle {
-      display: flex;
-      gap: 0.25rem;
-      background: rgba(0,0,0,0.04);
-      border-radius: 6px;
-      padding: 2px;
-    }
-
-    .agent-toggle-btn {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 0.25rem 0.6rem;
-      border-radius: 4px;
-      border: none;
+    .modal-close {
       background: transparent;
+      border: 1px solid var(--border);
       color: var(--muted);
+      width: 28px;
+      height: 28px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.12s;
+    }
+
+    .modal-close:hover { border-color: var(--orange); color: var(--orange); }
+
+    .modal-body { overflow-y: auto; padding: 1.5rem; flex: 1; }
+    .modal-body pre { white-space: pre-wrap; word-break: break-word; font-family: 'DM Mono', monospace; font-size: 0.75rem; line-height: 1.7; color: var(--text-2); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.75rem 1.1rem;
+      font-size: 0.78rem;
+      color: var(--text);
+      z-index: 400;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+      max-width: 300px;
+      box-shadow: var(--shadow-md);
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--green); }
+    .toast.error { border-color: var(--red); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 1024px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .stat-row { grid-template-columns: repeat(2, 1fr); }
+      .agent-grid { grid-template-columns: repeat(2, 1fr); }
+      .two-col { grid-template-columns: 1fr; }
+    }
+
+    /* ── MARKETING BRAIN ── */
+    .brain-container {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 60px - 3rem);
+      min-height: 500px;
+    }
+
+    .brain-hero {
+      text-align: center;
+      padding: 2.5rem 2rem 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .brain-logo {
+      width: 52px;
+      height: 52px;
+      background: var(--orange);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: white;
+      margin: 0 auto 1rem;
+      box-shadow: 0 4px 16px rgba(252,80,0,0.25);
+    }
+
+    .brain-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 0.4rem;
+    }
+
+    .brain-subtitle {
+      font-size: 0.82rem;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    .brain-suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+      padding: 0 2rem 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .brain-suggestion {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.4rem 0.875rem;
+      font-size: 0.75rem;
+      color: var(--text-2);
       cursor: pointer;
       transition: all 0.15s;
+      box-shadow: var(--shadow);
     }
 
-    .agent-toggle-btn.active {
-      background: var(--card-bg);
+    .brain-suggestion:hover {
+      border-color: var(--orange);
       color: var(--orange);
-      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
-    }
-
-    .contact-item {
-      padding: 0.85rem 1.25rem;
-      border-bottom: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s;
-      border-left: 2px solid transparent;
-    }
-
-    .contact-item:last-child { border-bottom: none; }
-    .contact-item:hover { background: rgba(0,0,0,0.02); }
-    .contact-item.active {
-      border-left-color: var(--orange);
       background: var(--orange-dim);
     }
 
-    .contact-name {
-      font-weight: 600;
-      font-size: 0.82rem;
-      color: var(--white);
-      margin-bottom: 1px;
-    }
-
-    .contact-meta {
-      font-size: 0.72rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .email-panel {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+    .brain-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 1.5rem 1rem;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      gap: 1rem;
     }
 
-    .email-panel-header {
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-      flex-shrink: 0;
-    }
-
-    .email-contact-name {
-      font-weight: 700;
-      font-size: 1rem;
-      color: var(--white);
-      margin-bottom: 2px;
-    }
-
-    .email-contact-meta {
-      font-size: 0.75rem;
-      color: var(--muted);
-    }
-
-    .email-tabs {
+    .brain-message {
       display: flex;
-      gap: 0.25rem;
-      padding: 0.75rem 1.5rem;
-      border-bottom: 1px solid var(--border);
+      gap: 0.75rem;
+      max-width: 820px;
+    }
+
+    .brain-message.user { align-self: flex-end; flex-direction: row-reverse; }
+
+    .brain-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
       flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .email-tab {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 0.3rem 0.75rem;
-      border-radius: 5px;
+    .brain-avatar.ai { background: var(--orange); color: white; }
+    .brain-avatar.user { background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); }
+
+    .brain-bubble {
+      background: var(--surface);
       border: 1px solid var(--border);
-      background: transparent;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.15s;
+      border-radius: 12px;
+      padding: 0.875rem 1.1rem;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: var(--text-2);
+      box-shadow: var(--shadow);
+      max-width: 680px;
     }
 
-    .email-tab.active {
+    .brain-message.user .brain-bubble {
       background: var(--orange);
       border-color: var(--orange);
       color: white;
     }
 
-    .email-tab:hover:not(.active) {
-      border-color: var(--orange);
-      color: var(--orange);
-    }
+    .brain-bubble p { margin-bottom: 0.5rem; }
+    .brain-bubble p:last-child { margin-bottom: 0; }
+    .brain-bubble strong { color: var(--text); font-weight: 600; }
+    .brain-message.user .brain-bubble strong { color: white; }
 
-    .email-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 1.5rem;
-      font-size: 0.84rem;
-      line-height: 1.7;
-      color: var(--off-white);
-    }
-
-    .email-empty {
-      padding: 3rem 1.5rem;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.82rem;
-    }
-
-    .contact-loading {
-      padding: 1.5rem;
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.78rem;
-    }
-
-
-    /* ── EMAIL METRICS ── */
-    .metrics-section {
-      margin-bottom: 2rem;
-    }
-
-    .metrics-group-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--orange);
-      margin-bottom: 0.75rem;
-    }
-
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .metric-card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem 1.25rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-
-    .metric-email-name {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.62rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 0.75rem;
-    }
-
-    .metric-stats {
+    .brain-input-row {
       display: flex;
-      gap: 1rem;
+      gap: 0.5rem;
+      padding: 1rem 1.5rem 0;
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      margin: 0 -1.5rem;
+      padding: 0.875rem 1.5rem;
     }
 
-    .metric-stat {
+    .brain-input {
       flex: 1;
-    }
-
-    .metric-value {
-      font-weight: 700;
-      font-size: 1.25rem;
-      color: var(--white);
-      line-height: 1;
-      margin-bottom: 2px;
-    }
-
-    .metric-value.highlight { color: var(--orange); }
-
-    .metric-label {
-      font-family: 'DM Mono', monospace;
-      font-size: 0.6rem;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      color: var(--muted);
-    }
-
-    .metric-card.not-found {
-      opacity: 0.4;
-    }
-
-    .metrics-loading {
-      padding: 2rem;
-      text-align: center;
-      color: var(--muted);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
       font-size: 0.82rem;
+      padding: 0.625rem 1rem;
+      outline: none;
+      transition: border-color 0.15s;
+      resize: none;
+      min-height: 42px;
+      max-height: 120px;
+    }
+
+    .brain-input:focus { border-color: var(--orange); }
+
+    .brain-send {
+      background: var(--orange);
+      border: none;
+      border-radius: 8px;
+      color: white;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+
+    .brain-send:hover { opacity: 0.85; }
+    .brain-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .brain-thinking {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.625rem 1.1rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      box-shadow: var(--shadow);
+    }
+
+    .brain-thinking-dots span {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--orange);
+      margin: 0 1px;
+      animation: blink 1.2s infinite;
+    }
+
+    .brain-thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .brain-thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+    .brain-salesforce-note {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 0.875rem;
+      background: var(--blue-dim);
+      border: 1px solid rgba(37,99,235,0.15);
+      border-radius: 7px;
+      font-size: 0.72rem;
+      color: var(--blue);
+      margin: 0 1.5rem 0.75rem;
+      flex-shrink: 0;
     }
 
   </style>
 </head>
 <body>
-  <div class="page-container">
-  <div class="wrap">
-    <header>
-      <div class="logo">
-        <div class="logo-mark"><img src="https://www.operative.com/wp-content/uploads/2023/03/operative-logomark@2x-e1680556738419.png" alt="Operative" /></div>
-        <div class="logo-text">
-          <div class="logo-title">Operative Marketing OS</div>
-          <div class="logo-sub">AI Agent Dashboard</div>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="last-updated" id="lastUpdated">Checking status...</div>
-        <button class="refresh-btn" onclick="loadAll()">Refresh</button>
-      </div>
-    </header>
+<div class="app">
 
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <img src="https://www.operative.com/wp-content/uploads/2023/03/operative-logomark@2x-e1680556738419.png" alt="Operative" class="logo-img" />
+      <div>
+        <span class="logo-name">Operative Marketing OS</span>
+        <span class="logo-tag">AI Agent Platform</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-time" id="topbarTime">Checking status...</div>
+      <button class="topbar-refresh" onclick="loadAll()">Refresh</button>
+    </div>
+  </header>
 
-    <!-- Nav Tabs -->
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="switchTab('dashboard')">Dashboard</button>
-      <button class="nav-tab" onclick="switchTab('context')">Context Editor</button>
-      <button class="nav-tab" onclick="switchTab('emails')">Prospecting Emails</button>
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-section">
+      <div class="nav-item" onclick="switchView('brain')" style="margin:0.25rem 0;">
+        <div class="nav-item-icon" style="background:var(--orange);color:white;font-size:12px;">✦</div>
+        <span style="font-weight:700;">Marketing Brain</span>
+        <span class="nav-badge badge-live">Live</span>
+      </div>
     </div>
 
-    <!-- Dashboard View -->
+    <div class="nav-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Overview</div>
+      <div class="nav-item active" onclick="switchView('dashboard')">
+        <div class="nav-item-icon" style="background:var(--orange-dim)">⚡</div>
+        Dashboard
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Demand Generation</div>
+      <div class="nav-item" onclick="switchView('inbound')">
+        <div class="nav-item-icon" style="background:var(--green-dim)">📥</div>
+        Inbound Lead Agent
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+      <div class="nav-item" onclick="switchView('emails')">
+        <div class="nav-item-icon" style="background:var(--orange-dim)">✉️</div>
+        Prospecting Email Agents
+        <span class="nav-badge badge-live">Live</span>
+      </div>
+      <div class="nav-item" onclick="switchView('linkedin')">
+        <div class="nav-item-icon" style="background:var(--blue-dim)">💼</div>
+        LinkedIn Content
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+      <div class="nav-item" onclick="switchView('campaigns')">
+        <div class="nav-item-icon" style="background:var(--blue-dim)">📣</div>
+        LinkedIn Campaigns
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+      <div class="nav-item" onclick="switchView('seo')">
+        <div class="nav-item-icon" style="background:var(--teal-dim)">🔍</div>
+        SEO & Adwords
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Sales Enablement</div>
+      <div class="nav-item" onclick="switchView('enablement')">
+        <div class="nav-item-icon" style="background:var(--purple-dim)">🎯</div>
+        Sales Enablement
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+      <div class="nav-item" onclick="switchView('competitive')">
+        <div class="nav-item-icon" style="background:var(--green-dim)">🔬</div>
+        Competitive Intel
+        <span class="nav-badge badge-live">Live</span>
+      </div>
+      <div class="nav-item" onclick="switchView('messaging')">
+        <div class="nav-item-icon" style="background:var(--yellow-dim)">💡</div>
+        Product Messaging
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Revenue Support</div>
+      <div class="nav-item" onclick="switchView('entertainment')">
+        <div class="nav-item-icon" style="background:var(--teal-dim)">🍽️</div>
+        Client Entertainment
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+      <div class="nav-item" onclick="switchView('weekly')">
+        <div class="nav-item-icon" style="background:var(--yellow-dim)">📊</div>
+        Weekly Lead Brief
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Pipeline</div>
+      <div class="nav-item" onclick="switchView('intent')">
+        <div class="nav-item-icon" style="background:var(--purple-dim)">🎯</div>
+        Intent Signals
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+      <div class="nav-item" onclick="switchView('demofollowup')">
+        <div class="nav-item-icon" style="background:var(--orange-dim)">⚡</div>
+        Demo Follow-Up
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+      <div class="nav-item" onclick="switchView('dealaccel')">
+        <div class="nav-item-icon" style="background:var(--blue-dim)">🔄</div>
+        Deal Acceleration
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+      <div class="nav-item" onclick="switchView('events')">
+        <div class="nav-item-icon" style="background:var(--teal-dim)">🎪</div>
+        Event Intelligence
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+    </div>
+
+    <div class="nav-divider"></div>
+
+    <div class="nav-divider"></div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">Analytics</div>
+      <div class="nav-item" onclick="switchView('metrics')">
+        <div class="nav-icon" style="background:var(--purple-dim)">📈</div>
+        Marketing Metrics Agent
+        <span class="nav-badge badge-soon">Soon</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="sidebar-section-label">System</div>
+      <div class="nav-item" onclick="switchView('context')">
+        <div class="nav-item-icon" style="background:var(--yellow-dim)">🗂️</div>
+        Context Editor
+        <span class="nav-badge badge-live">Live</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── MARKETING BRAIN VIEW ── -->
+    <div class="view" id="view-brain">
+      <div class="brain-container">
+        <div class="brain-hero">
+          <div class="brain-logo">✦</div>
+          <div class="brain-title">Marketing Brain</div>
+          <div class="brain-subtitle">Ask anything about your pipeline, campaigns, competitive landscape, or market. Powered by your context layer, HubSpot data, and live web search.</div>
+        </div>
+
+        <div class="brain-suggestions">
+          <div class="brain-suggestion" onclick="askBrain(this.textContent)">Why did we lose our last three enterprise deals?</div>
+          <div class="brain-suggestion" onclick="askBrain(this.textContent)">What's our best-performing email subject line by segment?</div>
+          <div class="brain-suggestion" onclick="askBrain(this.textContent)">Which competitors are most active right now and what should we do?</div>
+          <div class="brain-suggestion" onclick="askBrain(this.textContent)">What's the ICP fit for a company like Spotify?</div>
+          <div class="brain-suggestion" onclick="askBrain(this.textContent)">Draft a LinkedIn post about the Audience Economy</div>
+          <div class="brain-suggestion" onclick="askBrain(this.textContent)">What are the top 3 objections we hear from CTV buyers?</div>
+        </div>
+
+        <div class="brain-salesforce-note">
+          <span>🔗</span>
+          <span>Connect Salesforce to unlock pipeline insights, deal analysis, and win/loss intelligence</span>
+        </div>
+
+        <div class="brain-messages" id="brainMessages"></div>
+
+        <div class="brain-input-row">
+          <textarea class="brain-input" id="brainInput" placeholder="Ask anything about your market, pipeline, or campaigns..." rows="1"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendBrainMessage();}"
+            oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <button class="brain-send" id="brainSend" onclick="sendBrainMessage()">➤</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DASHBOARD VIEW ── -->
     <div class="view active" id="view-dashboard">
-    <!-- Agent Status -->
-    <div class="section-label">Agent Status</div>
-    <div class="agent-grid" id="agentGrid">
-      <div class="agent-card loading">
-        <div class="agent-status-row">
-          <div class="status-dot"></div>
-          <div class="status-text loading">Checking</div>
-        </div>
-        <div class="agent-name">Context Service</div>
-        <div class="agent-detail">Loading...</div>
-      </div>
-      <div class="agent-card loading">
-        <div class="agent-status-row">
-          <div class="status-dot"></div>
-          <div class="status-text loading">Checking</div>
-        </div>
-        <div class="agent-name">AOS Prospecting Agent</div>
-        <div class="agent-detail">Loading...</div>
-      </div>
-      <div class="agent-card loading">
-        <div class="agent-status-row">
-          <div class="status-dot"></div>
-          <div class="status-text loading">Checking</div>
-        </div>
-        <div class="agent-name">STAQ Prospecting Agent</div>
-        <div class="agent-detail">Loading...</div>
-      </div>
-      <div class="agent-card loading">
-        <div class="agent-status-row">
-          <div class="status-dot"></div>
-          <div class="status-text loading">Checking</div>
-        </div>
-        <div class="agent-name">Competitive Intel Agent</div>
-        <div class="agent-detail">Loading...</div>
-      </div>
-    </div>
-
-    <!-- Competitive Intel -->
-    <!-- Context Health -->
-    <div class="section-label">Context Layer Health</div>
-    <div class="health-bar" id="healthBar">
-      <div class="health-card">
-        <div class="health-icon loading">&#8226;&#8226;&#8226;</div>
-        <div class="health-info">
-          <div class="health-label">Global Files</div>
-          <div class="health-value">Checking</div>
-        </div>
-      </div>
-      <div class="health-card">
-        <div class="health-icon loading">&#8226;&#8226;&#8226;</div>
-        <div class="health-info">
-          <div class="health-label">Agent Files</div>
-          <div class="health-value">Checking</div>
-        </div>
-      </div>
-      <div class="health-card">
-        <div class="health-icon loading">&#8226;&#8226;&#8226;</div>
-        <div class="health-info">
-          <div class="health-label">Learnings</div>
-          <div class="health-value">Checking</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="section-label">Competitive Intelligence — Run Research</div>
-    <div class="competitors-grid">
-      <div class="competitor-card" onclick="runCompetitor('Boostr')">
-        <div class="competitor-name">Boostr</div>
-        <div class="competitor-action">Run Research</div>
-      </div>
-      <div class="competitor-card" onclick="runCompetitor('Fattail')">
-        <div class="competitor-name">Fattail</div>
-        <div class="competitor-action">Run Research</div>
-      </div>
-      <div class="competitor-card" onclick="runCompetitor('Advendio')">
-        <div class="competitor-name">Advendio</div>
-        <div class="competitor-action">Run Research</div>
-      </div>
-      <div class="competitor-card" onclick="runCompetitor('Placements.io')">
-        <div class="competitor-name">Placements.io</div>
-        <div class="competitor-action">Run Research</div>
-      </div>
-      <div class="competitor-card" onclick="runCompetitor('WideOrbit')">
-        <div class="competitor-name">WideOrbit</div>
-        <div class="competitor-action">Run Research</div>
-      </div>
-      <div class="competitor-card" onclick="runCompetitor('Mediagenix')">
-        <div class="competitor-name">Mediagenix</div>
-        <div class="competitor-action">Run Research</div>
-      </div>
-    </div>
-
-    <!-- Main Grid -->
-    <div class="main-grid">
-      <!-- Activity Feed -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">Recent Activity</div>
-        </div>
-        <div class="panel-body" id="activityFeed">
-          <div class="empty-state">Loading activity...</div>
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-subtitle">Execution overview, context health, and recent activity</div>
         </div>
       </div>
 
-      <!-- Sidebar -->
-      <div class="sidebar">
-        <!-- Quick Actions -->
+      <!-- Stats row -->
+      <div class="stat-row" id="dashStatRow">
+        <div class="stat-card">
+          <div class="stat-label">Active Agents</div>
+          <div class="stat-value" id="statActiveAgents">—</div>
+          <div class="stat-sub">of <span id="statTotalAgents">—</span> total</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">AOS Sent</div>
+          <div class="stat-value">1,254</div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">STAQ Sent</div>
+          <div class="stat-value">2,188</div>
+          <div class="stat-sub">All time</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Context Files</div>
+          <div class="stat-value" id="statContextFiles">—</div>
+          <div class="stat-sub">Across all layers</div>
+        </div>
+      </div>
+
+
+      <!-- Context health -->
+
+      <!-- Context health -->
+      <div class="section-label">Context Layer Health</div>
+      <div class="health-grid" id="healthBar">
+        <div class="health-card"><div class="health-icon" style="background:var(--border)">·</div><div><div class="health-label">Global Files</div><div class="health-value loading">Checking</div></div></div>
+        <div class="health-card"><div class="health-icon" style="background:var(--border)">·</div><div><div class="health-label">Agent Files</div><div class="health-value loading">Checking</div></div></div>
+        <div class="health-card"><div class="health-icon" style="background:var(--border)">·</div><div><div class="health-label">Learnings</div><div class="health-value loading">Checking</div></div></div>
+      </div>
+
+      <!-- Two col: activity + sidebar -->
+      <div class="two-col">
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">Quick Actions</div>
+            <div class="panel-title">Recent Learnings</div>
           </div>
-          <div class="action-list">
-            <button class="action-btn" onclick="runCompetitor(null)">
-              <div class="action-icon green">🔍</div>
-              <div>
-                <div class="action-label">Run All Competitors</div>
-                <div class="action-sub">Full weekly research run</div>
+          <div id="activityFeed"><div class="editor-empty">Loading...</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:1rem;">
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Quick Actions</div></div>
+            <div>
+              <button class="action-btn" onclick="runCompetitor(null)">
+                <div class="action-icon" style="background:var(--green-dim)">🔍</div>
+                <div><div class="action-label">Run All Competitors</div><div class="action-sub">Full weekly research run</div></div>
+              </button>
+              <button class="action-btn" onclick="switchView('context')">
+                <div class="action-icon" style="background:var(--yellow-dim)">🗂️</div>
+                <div><div class="action-label">Edit Context Files</div><div class="action-sub">ICP, positioning, brand voice</div></div>
+              </button>
+              <button class="action-btn" onclick="switchView('emails')">
+                <div class="action-icon" style="background:var(--orange-dim)">✉️</div>
+                <div><div class="action-label">View Email Metrics</div><div class="action-sub">Open rates, CTR by sequence</div></div>
+              </button>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title">Add Learning</div></div>
+            <div class="panel-body">
+              <div class="form-group">
+                <label class="form-label">Agent</label>
+                <select class="form-select" id="learningAgent">
+                  <option value="aos-nurture">AOS Prospecting</option>
+                  <option value="staq-prospecting">STAQ Prospecting</option>
+                  <option value="content">Content</option>
+                  <option value="competitive-boostr">Competitive: Boostr</option>
+                  <option value="competitive-fattail">Competitive: Fattail</option>
+                  <option value="competitive-advendio">Competitive: Advendio</option>
+                  <option value="competitive-placementsio">Competitive: Placements.io</option>
+                  <option value="competitive-wideorbit">Competitive: WideOrbit</option>
+                  <option value="competitive-mediagenix">Competitive: Mediagenix</option>
+                </select>
               </div>
-            </button>
-          </div>
-        </div>
-
-        <!-- Add Learning -->
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">Add Learning</div>
-          </div>
-          <div class="learning-form">
-            <div class="form-group">
-              <label class="form-label">Agent</label>
-              <select class="form-select" id="learningAgent">
-                <option value="aos-nurture">AOS Nurture</option>
-                <option value="staq-prospecting">STAQ Prospecting</option>
-                <option value="content">Content</option>
-                <option value="competitive-boostr">Competitive: Boostr</option>
-                <option value="competitive-fattail">Competitive: Fattail</option>
-                <option value="competitive-advendio">Competitive: Advendio</option>
-                <option value="competitive-placementsio">Competitive: Placements.io</option>
-                <option value="competitive-wideorbit">Competitive: WideOrbit</option>
-                <option value="competitive-mediagenix">Competitive: Mediagenix</option>
-              </select>
+              <div class="form-group">
+                <label class="form-label">Note</label>
+                <textarea class="form-textarea" id="learningNote" placeholder="What worked, what didn't, what changed..."></textarea>
+              </div>
+              <button class="submit-btn" id="submitLearning" onclick="submitLearning()">Save to Context Layer</button>
             </div>
-            <div class="form-group">
-              <label class="form-label">Note</label>
-              <textarea class="form-textarea" id="learningNote" placeholder="What worked, what didn't, what changed..."></textarea>
-            </div>
-            <button class="submit-btn" id="submitLearning" onclick="submitLearning()">Save to Context Layer</button>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
+      <!-- Agent status (moved to bottom) -->
+      <div class="section-label" style="margin-top:0.5rem;">Agent Status</div>
+      <div class="agent-grid" id="agentGrid">
+        <div class="agent-card status-planned">
+          <div class="agent-status-row"><div class="agent-dot planned"></div><div class="agent-status-text planned">Checking</div></div>
+          <div class="agent-name">Context Service</div>
+          <div class="agent-detail">Loading...</div>
+        </div>
+        <div class="agent-card status-planned">
+          <div class="agent-status-row"><div class="agent-dot planned"></div><div class="agent-status-text planned">Checking</div></div>
+          <div class="agent-name">AOS Prospecting</div>
+          <div class="agent-detail">Loading...</div>
+        </div>
+        <div class="agent-card status-planned">
+          <div class="agent-status-row"><div class="agent-dot planned"></div><div class="agent-status-text planned">Checking</div></div>
+          <div class="agent-name">STAQ Prospecting</div>
+          <div class="agent-detail">Loading...</div>
+        </div>
+        <div class="agent-card status-planned">
+          <div class="agent-status-row"><div class="agent-dot planned"></div><div class="agent-status-text planned">Checking</div></div>
+          <div class="agent-name">Competitive Intel</div>
+          <div class="agent-detail">Loading...</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Inbound Lead Agent</div>
+          <div class="agent-detail">Enrich, score, and route inbound form fills</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">LinkedIn Content</div>
+          <div class="agent-detail">Generate posts, thought leadership, campaign copy</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Sales Enablement</div>
+          <div class="agent-detail">Battle cards, objections, discovery questions</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Product Messaging</div>
+          <div class="agent-detail">Positioning frameworks and launch copy</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">SEO / Adwords</div>
+          <div class="agent-detail">Keyword research and ad copy suggestions</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">LinkedIn Campaigns</div>
+          <div class="agent-detail">Ad copy, audience targeting, creative briefs</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Client Entertainment</div>
+          <div class="agent-detail">Restaurant suggestions + reservations via OpenTable/Resy</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Weekly Lead Brief</div>
+          <div class="agent-detail">Pipeline summary and sales meeting talking points</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Intent Signal Agent</div>
+          <div class="agent-detail">Surfaces high-intent accounts from 6sense and Bombora before they reach out</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Demo Follow-Up Agent</div>
+          <div class="agent-detail">Researches the call, drafts a personalized follow-up within minutes of the demo ending</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Deal Acceleration Agent</div>
+          <div class="agent-detail">Monitors stalled deals and generates re-engagement messages tailored to where they stopped</div>
+        </div>
+        <div class="agent-card status-soon">
+          <div class="agent-status-row"><div class="agent-dot soon"></div><div class="agent-status-text soon">Coming Soon</div></div>
+          <div class="agent-name">Event Intelligence Agent</div>
+          <div class="agent-detail">Identifies ICP matches at upcoming events and generates personalized outreach for booth meetings</div>
+        </div>
+      </div>
 
-    </div><!-- end view-dashboard -->
+    <!-- ── INBOUND LEADS VIEW ── -->
+    <div class="view" id="view-inbound">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Inbound Lead Agent</div>
+          <div class="page-subtitle">Enriched, scored, and routed from operative.com contact form</div>
+        </div>
+      </div>
+      <div class="panel" style="margin-bottom:1rem;">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--green-dim)">📥</div>
+          <div class="coming-soon-title">Inbound Lead Agent</div>
+          <div class="coming-soon-desc">When a prospect fills out the contact form, this agent researches their company, scores them against your ICP, routes them to the right sequence (AOS, STAQ, Managed Services, or GAM), and drops them into a personalized email series — all before you've had your morning coffee.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--green)"></div><div class="coming-soon-feature-text">Company research via web search — vertical, revenue, tech stack, ad model</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--green)"></div><div class="coming-soon-feature-text">ICP scoring — AOS, STAQ, Managed Services, or GAM fit</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--green)"></div><div class="coming-soon-feature-text">Personalized 3-email sequence based on inferred need</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--green)"></div><div class="coming-soon-feature-text">Lead summary card for weekly sales meeting review</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">HubSpot enrichment — contact and company properties updated automatically</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-    <!-- Context Editor View -->
+    <!-- ── PROSPECTING EMAILS VIEW ── -->
+    <div class="view" id="view-emails">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Prospecting Email Agents</div>
+          <div class="page-subtitle">Performance metrics and generated email preview by contact</div>
+        </div>
+      </div>
+      <div id="emailMetricsSection"><div style="padding:1rem;color:var(--muted);font-size:0.78rem;">Loading metrics...</div></div>
+      <div class="email-viewer">
+        <div class="contact-list-panel">
+          <div class="contact-list-header">
+            <div class="contact-list-title">Contacts</div>
+            <div class="agent-toggle">
+              <button class="agent-toggle-btn active" id="toggleAOS" onclick="switchEmailAgent('aos')">AOS</button>
+              <button class="agent-toggle-btn" id="toggleSTAQ" onclick="switchEmailAgent('staq')">STAQ</button>
+            </div>
+          </div>
+          <div id="contactList"><div class="contact-loading">Select a tab to load contacts.</div></div>
+        </div>
+        <div class="email-panel" id="emailPanel">
+          <div class="email-empty">Select a contact to view their generated emails.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LINKEDIN CONTENT VIEW ── -->
+    <div class="view" id="view-linkedin">
+      <div class="page-header"><div><div class="page-title">LinkedIn Content Agent</div><div class="page-subtitle">AI-generated posts, thought leadership, and engagement copy</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--blue-dim)">💼</div>
+          <div class="coming-soon-title">LinkedIn Content Agent</div>
+          <div class="coming-soon-desc">Generates a weekly queue of posts drawn from competitive intel, product news, and Operative's market POV. Every post reads like it came from you — not a content mill.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--blue)"></div><div class="coming-soon-feature-text">Weekly post queue — 5 posts per week, ready to review and publish</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--blue)"></div><div class="coming-soon-feature-text">Sourced from competitive intel, product updates, and market signals</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--blue)"></div><div class="coming-soon-feature-text">Executive voice — written as Chris Hession, not as Operative corp</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">One-click approve and schedule via LinkedIn API</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── LINKEDIN CAMPAIGNS VIEW ── -->
+    <div class="view" id="view-campaigns">
+      <div class="page-header"><div><div class="page-title">LinkedIn Campaign Agent</div><div class="page-subtitle">Ad copy, audience briefs, and creative recommendations</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--blue-dim)">📣</div>
+          <div class="coming-soon-title">LinkedIn Campaign Agent</div>
+          <div class="coming-soon-desc">Builds campaign briefs, writes ad copy variants, and recommends targeting parameters — pulling from your ICP and competitive intel to make every campaign specific to a segment.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--blue)"></div><div class="coming-soon-feature-text">Ad copy for AOS, STAQ, and Managed Services by segment</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--blue)"></div><div class="coming-soon-feature-text">Audience targeting brief — job titles, company sizes, industries</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">A/B copy variants with hypothesis for each test</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SEO VIEW ── -->
+    <div class="view" id="view-seo">
+      <div class="page-header"><div><div class="page-title">SEO & Adwords Agent</div><div class="page-subtitle">Keyword recommendations, search intent mapping, and ad copy</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--teal-dim)">🔍</div>
+          <div class="coming-soon-title">SEO & Adwords Agent</div>
+          <div class="coming-soon-desc">Surfaces high-intent keywords your buyers are searching, maps them to product pages and landing pages, and writes Google ad copy optimized for conversion — not just clicks.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--teal)"></div><div class="coming-soon-feature-text">Weekly keyword recommendations by product and segment</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--teal)"></div><div class="coming-soon-feature-text">Search intent mapping — informational vs. transactional vs. navigational</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--teal)"></div><div class="coming-soon-feature-text">Google ad copy variants for AOS, STAQ, and Managed Services</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">AEO optimization — answer-engine-ready content structure</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SALES ENABLEMENT VIEW ── -->
+    <div class="view" id="view-enablement">
+      <div class="page-header"><div><div class="page-title">Sales Enablement Agent</div><div class="page-subtitle">Battle cards, objection handling, and discovery frameworks</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--purple-dim)">🎯</div>
+          <div class="coming-soon-title">Sales Enablement Agent</div>
+          <div class="coming-soon-desc">Gives every rep instant access to competitive battle cards, objection responses, discovery questions, and deal coaching — all drawn from your context layer and updated weekly from competitive intel.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--purple)"></div><div class="coming-soon-feature-text">Battle cards for Boostr, Fattail, Advendio, Placements.io, WideOrbit, Mediagenix</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--purple)"></div><div class="coming-soon-feature-text">Objection handler — type an objection, get a structured response</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--purple)"></div><div class="coming-soon-feature-text">Discovery question generator by segment and buyer persona</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Deal coaching — paste a deal summary, get a recommended next action</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── COMPETITIVE INTEL VIEW ── -->
+    <div class="view" id="view-competitive">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Competitive Intel Agent</div>
+          <div class="page-subtitle">Weekly research across Boostr, Fattail, Advendio, Placements.io, WideOrbit, Mediagenix</div>
+        </div>
+      </div>
+      <div class="section-label" style="margin-bottom:0.75rem;">Run Research</div>
+      <div class="competitor-grid" style="margin-bottom:1.5rem;">
+        <div class="competitor-card" onclick="runCompetitor('Boostr')"><div class="competitor-name">Boostr</div><div class="competitor-action">Run Research</div></div>
+        <div class="competitor-card" onclick="runCompetitor('Fattail')"><div class="competitor-name">Fattail</div><div class="competitor-action">Run Research</div></div>
+        <div class="competitor-card" onclick="runCompetitor('Advendio')"><div class="competitor-name">Advendio</div><div class="competitor-action">Run Research</div></div>
+        <div class="competitor-card" onclick="runCompetitor('Placements.io')"><div class="competitor-name">Placements.io</div><div class="competitor-action">Run Research</div></div>
+        <div class="competitor-card" onclick="runCompetitor('WideOrbit')"><div class="competitor-name">WideOrbit</div><div class="competitor-action">Run Research</div></div>
+        <div class="competitor-card" onclick="runCompetitor('Mediagenix')"><div class="competitor-name">Mediagenix</div><div class="competitor-action">Run Research</div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><div class="panel-title">Recent Reports</div></div>
+        <div id="competitiveFeed"><div class="editor-empty">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ── PRODUCT MESSAGING VIEW ── -->
+    <div class="view" id="view-messaging">
+      <div class="page-header"><div><div class="page-title">Product Messaging Agent</div><div class="page-subtitle">Positioning frameworks, launch copy, and feature narratives</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--yellow-dim)">💡</div>
+          <div class="coming-soon-title">Product Messaging Agent</div>
+          <div class="coming-soon-desc">Generates and maintains positioning frameworks for AOS, STAQ, Adeline AI, and OnAir — keeping messaging sharp as the market evolves and competitive dynamics shift.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Positioning refresh — triggered by competitive intel updates</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Launch copy generator — headline, subhead, value props, CTA</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Segment-specific messaging variants by vertical</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CLIENT ENTERTAINMENT VIEW ── -->
+    <div class="view" id="view-entertainment">
+      <div class="page-header"><div><div class="page-title">Client Entertainment Agent</div><div class="page-subtitle">NYC restaurant suggestions and reservations for prospect and client dinners</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--teal-dim)">🍽️</div>
+          <div class="coming-soon-title">Client Entertainment Agent</div>
+          <div class="coming-soon-desc">Enter a guest name and their company — the agent suggests restaurants matched to their profile (enterprise media exec vs. startup founder vs. sports media), then books via OpenTable or Resy automatically.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--teal)"></div><div class="coming-soon-feature-text">Profile-matched suggestions — cuisine, vibe, price point by guest type</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--teal)"></div><div class="coming-soon-feature-text">NYC-focused with private dining and event spaces flagged</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Automated reservations via OpenTable and Resy MCP connectors</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Calendar invite creation with restaurant details and directions</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── WEEKLY BRIEF VIEW ── -->
+    <div class="view" id="view-weekly">
+      <div class="page-header"><div><div class="page-title">Weekly Lead Brief Agent</div><div class="page-subtitle">Pipeline summary and talking points for Monday sales meetings</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--yellow-dim)">📊</div>
+          <div class="coming-soon-title">Weekly Lead Brief Agent</div>
+          <div class="coming-soon-desc">Every Monday morning, this agent pulls inbound leads from the past week, summarizes pipeline movement, and generates a one-page briefing you can paste directly into your sales meeting agenda.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">New inbound leads — company, contact, ICP fit, routing decision</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Pipeline movement — stage changes, new opportunities created</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Email performance snapshot — open rates, replies, hot leads</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">One-click export to Google Doc or Slack</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INTENT SIGNALS VIEW ── -->
+    <div class="view" id="view-intent">
+      <div class="page-header"><div><div class="page-title">Intent Signal Agent</div><div class="page-subtitle">High-intent accounts surfaced from 6sense, Bombora, and G2 buyer data</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--purple-dim)">🎯</div>
+          <div class="coming-soon-title">Intent Signal Agent</div>
+          <div class="coming-soon-desc">Monitors your intent data providers daily, surfaces accounts showing high purchase intent for AOS or STAQ, enriches them against your ICP, and queues them for prospecting — before they ever fill out a form.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--purple)"></div><div class="coming-soon-feature-text">Daily intent signal pull from 6sense — accounts researching OMS, ad tech, or Operative competitors</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--purple)"></div><div class="coming-soon-feature-text">ICP scoring — matches intent accounts against AOS and STAQ fit criteria</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--purple)"></div><div class="coming-soon-feature-text">Auto-enrich and queue — pushes high-fit accounts into HubSpot prospecting sequences</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Weekly intent brief — top 10 accounts to prioritize this week with outreach rationale</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DEMO FOLLOW-UP VIEW ── -->
+    <div class="view" id="view-demofollowup">
+      <div class="page-header"><div><div class="page-title">Demo Follow-Up Agent</div><div class="page-subtitle">Personalized follow-up emails generated within minutes of every demo</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--orange-dim)">⚡</div>
+          <div class="coming-soon-title">Demo Follow-Up Agent</div>
+          <div class="coming-soon-desc">When a demo meeting ends, this agent researches the prospect's company, pulls the meeting notes from HubSpot, and drafts a follow-up email that references specific pain points from the call — ready to send before you've closed your laptop.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--orange)"></div><div class="coming-soon-feature-text">Triggered by HubSpot meeting completion — fires automatically after every demo</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--orange)"></div><div class="coming-soon-feature-text">Pulls meeting notes and references specific pain points discussed</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--orange)"></div><div class="coming-soon-feature-text">Researches the company in real time — news, recent hires, competitive context</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Custom one-pager generated per prospect — product fit, ROI framing, next steps</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DEAL ACCELERATION VIEW ── -->
+    <div class="view" id="view-dealaccel">
+      <div class="page-header"><div><div class="page-title">Deal Acceleration Agent</div><div class="page-subtitle">Re-engage stalled deals before they go cold</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--blue-dim)">🔄</div>
+          <div class="coming-soon-title">Deal Acceleration Agent</div>
+          <div class="coming-soon-desc">Monitors HubSpot for deals that have gone quiet — no activity in 7, 14, or 21 days — identifies why they likely stalled, and generates a re-engagement message tailored to where the deal stopped moving.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--blue)"></div><div class="coming-soon-feature-text">Stall detection — flags deals with no activity past configurable thresholds</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--blue)"></div><div class="coming-soon-feature-text">Root cause inference — was it pricing, timing, competition, or internal change?</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--blue)"></div><div class="coming-soon-feature-text">Personalized re-engagement — references last activity and gives them a reason to respond</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Weekly stalled deal report — queued in dashboard for rep review before sending</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EVENT INTELLIGENCE VIEW ── -->
+    <div class="view" id="view-events">
+      <div class="page-header"><div><div class="page-title">Event Intelligence Agent</div><div class="page-subtitle">ICP matching, personalized outreach, and follow-up for industry events</div></div></div>
+      <div class="panel">
+        <div class="coming-soon">
+          <div class="coming-soon-icon" style="background:var(--teal-dim)">🎪</div>
+          <div class="coming-soon-title">Event Intelligence Agent</div>
+          <div class="coming-soon-desc">Four weeks before any industry event — StreamTV, NAB, IBC, Advertising Week — this agent researches the attendee list, identifies ICP matches, and generates personalized outreach for booth meetings and dinners. Post-event, it follows up on every badge scan automatically.</div>
+          <div class="coming-soon-features">
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--teal)"></div><div class="coming-soon-feature-text">Pre-event attendee enrichment — ICP scoring, tier ranking, outreach prioritization</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--teal)"></div><div class="coming-soon-feature-text">Personalized meeting request emails — references company context and event relevance</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--teal)"></div><div class="coming-soon-feature-text">Post-event follow-up — badge scan data in, personalized follow-ups out within 24 hours</div></div>
+            <div class="coming-soon-feature"><div class="feature-dot" style="background:var(--yellow)"></div><div class="coming-soon-feature-text">Event content package — pre-event LinkedIn posts, live updates, post-event recap</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MARKETING METRICS AGENT ── -->
+    <div class="view" id="view-metrics">
+      <div class="coming-soon-view">
+        <div class="page-header">
+          <div class="page-title">Marketing Metrics Agent</div>
+          <div class="page-subtitle">Unified performance intelligence across web, pipeline, and agents</div>
+        </div>
+        <div class="coming-soon">
+          <div class="cs-icon" style="background:var(--purple-dim)">📈</div>
+          <div class="cs-title">Marketing Metrics Agent</div>
+          <div class="cs-desc">A single intelligence layer that pulls web analytics, lead performance, opportunity data, and agent activity into one view — including how much time your AI agents are saving your team every week.</div>
+          <div class="cs-features">
+            <div class="cs-feature"><div class="cs-dot" style="background:var(--purple)"></div><div class="cs-feature-text">Web metrics — sessions, conversions, top pages, lead source attribution</div></div>
+            <div class="cs-feature"><div class="cs-dot" style="background:var(--purple)"></div><div class="cs-feature-text">Lead metrics — inbound volume, ICP fit score distribution, routing outcomes</div></div>
+            <div class="cs-feature"><div class="cs-dot" style="background:var(--purple)"></div><div class="cs-feature-text">Opportunity metrics — pipeline created, deal velocity, win/loss by segment</div></div>
+            <div class="cs-feature"><div class="cs-dot" style="background:var(--purple)"></div><div class="cs-feature-text">Agent usage — runs per week, outputs generated, contacts processed by agent</div></div>
+            <div class="cs-feature"><div class="cs-dot" style="background:var(--yellow)"></div><div class="cs-feature-text">Time savings calculator — estimated hours saved vs. manual execution per agent and in aggregate</div></div>
+            <div class="cs-feature"><div class="cs-dot" style="background:var(--yellow)"></div><div class="cs-feature-text">Weekly performance brief — auto-generated summary for Monday leadership review</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── CONTEXT EDITOR VIEW ── -->
     <div class="view" id="view-context">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Context Editor</div>
+          <div class="page-subtitle">View and edit the intelligence files every agent reads from</div>
+        </div>
+      </div>
       <div class="context-layout">
-        <!-- File Tree -->
-        <div class="file-tree" id="fileTree">
-          <div class="editor-empty">Loading files...</div>
-        </div>
-
-        <!-- Editor Panel -->
-        <div class="file-editor-panel" id="editorPanel">
-          <div class="editor-empty">Select a file from the left to view or edit it.</div>
-        </div>
-
-        <!-- Upload Panel (hidden by default, shown instead of editor) -->
+        <div class="file-tree" id="fileTree"><div class="editor-empty">Loading files...</div></div>
+        <div class="file-editor-panel" id="editorPanel"><div class="editor-empty">Select a file from the left to view or edit it.</div></div>
         <div class="file-editor-panel" id="uploadPanel" style="display:none;">
           <div class="file-editor-header">
             <div class="file-editor-path">Upload a file</div>
             <button class="edit-btn cancel" onclick="hideUploadPanel()">Cancel</button>
           </div>
-          <!-- Drop zone -->
           <div id="uploadDropZone">
-            <div class="upload-zone" id="dropZone"
-              onclick="document.getElementById('fileInput').click()"
-              ondragover="handleDragOver(event)"
-              ondragleave="handleDragLeave(event)"
-              ondrop="handleDrop(event)">
-              <div class="upload-zone-icon">&#8593;</div>
+            <div class="upload-zone" id="dropZone" onclick="document.getElementById('fileInput').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+              <div class="upload-zone-icon">⬆</div>
               <div class="upload-zone-text">Drop a file here or click to browse</div>
-              <div class="upload-zone-sub">PDF, Word, HTML, TXT, Markdown</div>
+              <div class="upload-zone-sub">PDF · Word · HTML · TXT · Markdown</div>
             </div>
-            <input type="file" id="fileInput" style="display:none"
-              accept=".pdf,.docx,.html,.txt,.md"
-              onchange="handleFileSelect(event)" />
+            <input type="file" id="fileInput" style="display:none" accept=".pdf,.docx,.html,.txt,.md" onchange="handleFileSelect(event)" />
           </div>
-          <!-- Processing state -->
-          <div id="uploadProcessing" style="display:none;">
-            <div class="processing-state">
-              <div class="processing-spinner"></div>
-              <div>Claude is cleaning up and formatting the file...</div>
-            </div>
-          </div>
-          <!-- Preview -->
+          <div id="uploadProcessing" style="display:none;"><div class="processing-state"><div class="processing-spinner"></div><div>Claude is cleaning and formatting the file...</div></div></div>
           <div class="upload-preview" id="uploadPreview">
             <div class="upload-preview-header">
               <div class="upload-preview-fields">
-                <select class="new-file-input" id="uploadSection" style="width:110px;flex-shrink:0;">
+                <select class="new-file-input" id="uploadSection" style="width:100px;flex-shrink:0;">
                   <option value="global">global/</option>
                   <option value="agents">agents/</option>
                   <option value="learnings">learnings/</option>
@@ -1662,784 +2215,682 @@
           </div>
         </div>
       </div>
-    </div><!-- end view-context -->
-
-    <!-- Prospecting Emails View -->
-    <div class="view" id="view-emails">
-      <!-- Metrics -->
-      <div id="emailMetricsSection">
-        <div class="metrics-loading">Loading email metrics...</div>
-      </div>
-
-      <div class="email-viewer-layout">
-        <!-- Contact List -->
-        <div class="contact-list">
-          <div class="contact-list-header">
-            <div class="contact-list-title">Contacts</div>
-            <div class="agent-toggle">
-              <button class="agent-toggle-btn active" id="toggleAOS" onclick="switchEmailAgent('aos')">AOS</button>
-              <button class="agent-toggle-btn" id="toggleSTAQ" onclick="switchEmailAgent('staq')">STAQ</button>
-            </div>
-          </div>
-          <div id="contactList">
-            <div class="contact-loading">Select a tab to load contacts.</div>
-          </div>
-        </div>
-
-        <!-- Email Panel -->
-        <div class="email-panel" id="emailPanel">
-          <div class="email-empty">Select a contact to view their generated emails.</div>
-        </div>
-      </div>
     </div>
 
+  </main>
+</div>
 
-
-
-  <!-- Report Modal -->
-  <div class="modal-overlay" id="reportModal" onclick="closeModal(event)">
-    <div class="modal">
-      <div class="modal-header">
-        <div>
-          <div class="modal-title" id="modalTitle">Report</div>
-          <div class="modal-meta" id="modalMeta"></div>
-        </div>
-        <button class="modal-close" onclick="closeReportModal()">&#x2715;</button>
-      </div>
-      <div class="modal-body">
-        <pre id="modalBody"></pre>
-      </div>
-    </div>
+<!-- AUTH OVERLAY -->
+<div class="auth-overlay" id="authOverlay">
+  <div class="auth-box">
+    <div class="auth-title">Editor Access</div>
+    <div class="auth-sub">Enter your editor password to continue.</div>
+    <div class="auth-error" id="authError">Incorrect password. Try again.</div>
+    <input class="auth-input" type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter') submitAuth()" />
+    <button class="submit-btn" onclick="submitAuth()">Unlock Editor</button>
   </div>
+</div>
 
-
-  <!-- Auth Overlay -->
-  <div class="auth-overlay" id="authOverlay">
-    <div class="auth-box">
-      <div class="auth-title">Editor Access</div>
-      <div class="auth-sub">Enter your editor password to continue.</div>
-      <div class="auth-error" id="authError">Incorrect password. Try again.</div>
-      <input class="auth-input" type="password" id="authPassword" placeholder="Password" onkeydown="if(event.key==='Enter') submitAuth()" />
-      <button class="submit-btn" onclick="submitAuth()">Unlock Editor</button>
+<!-- REPORT MODAL -->
+<div class="modal-overlay" id="reportModal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalTitle">Report</div>
+        <div class="modal-meta" id="modalMeta"></div>
+      </div>
+      <button class="modal-close" onclick="closeReportModal()">✕</button>
     </div>
+    <div class="modal-body"><pre id="modalBody"></pre></div>
   </div>
+</div>
 
-  <!-- Toast -->
-  <div class="toast" id="toast"></div>
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
-  <script>
-    // ── Learnings feed from context layer ──
-    async function loadLearnings() {
-      const feed = document.getElementById('activityFeed');
-      try {
-        const res = await fetch('/api/learnings');
-        if (!res.ok) throw new Error('Failed');
-        const entries = await res.json();
+<script>
 
-        if (!entries.length) {
-          feed.innerHTML = '<div class="empty-state">No learnings yet. Add one below or trigger a competitive research run.</div>';
-          return;
-        }
+  // ── Marketing Brain ──
+  const brainHistory = [];
 
-        window._learningsData = entries;
-        feed.innerHTML = entries.map((item, idx) => {
-          const agentKey = agentColor(item.agent);
-          const preview = item.note.slice(0, 160) + (item.note.length > 160 ? '...' : '');
-          return `
-            <div class="activity-item" onclick="openReport(${idx})">
-              <div class="activity-bar ${agentKey}"></div>
-              <div class="activity-content">
-                <div class="activity-meta">
-                  <span class="activity-agent ${agentKey}">${item.agent}</span>
-                  <span class="activity-time">${item.date}</span>
-                </div>
-                <div class="activity-text">${preview}</div>
-                <div class="view-hint">Click to read full report</div>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch (err) {
-        feed.innerHTML = '<div class="empty-state">Could not load learnings. Check context service.</div>';
+  async function askBrain(question) {
+    document.getElementById('brainInput').value = question;
+    sendBrainMessage();
+  }
+
+  async function sendBrainMessage() {
+    const input = document.getElementById('brainInput');
+    const question = input.value.trim();
+    if (!question) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+
+    const sendBtn = document.getElementById('brainSend');
+    sendBtn.disabled = true;
+
+    const messages = document.getElementById('brainMessages');
+
+    // Hide suggestions on first message
+    const suggestions = document.querySelector('.brain-suggestions');
+    if (suggestions) suggestions.style.display = 'none';
+    const hero = document.querySelector('.brain-hero');
+    if (hero) hero.style.paddingBottom = '0.75rem';
+
+    // Add user message
+    messages.innerHTML += `
+      <div class="brain-message user">
+        <div class="brain-avatar user">C</div>
+        <div class="brain-bubble">${escapeHtml(question)}</div>
+      </div>`;
+
+    // Add thinking indicator
+    const thinkingId = 'thinking-' + Date.now();
+    messages.innerHTML += `
+      <div class="brain-message" id="${thinkingId}">
+        <div class="brain-avatar ai">✦</div>
+        <div class="brain-thinking">
+          <div class="brain-thinking-dots"><span></span><span></span><span></span></div>
+          <span>Thinking...</span>
+        </div>
+      </div>`;
+
+    messages.scrollTop = messages.scrollHeight;
+
+    // Fetch context for the brain
+    let contextBlock = '';
+    try {
+      const ctxRes = await fetch('/api/context-for-brain');
+      if (ctxRes.ok) {
+        const ctx = await ctxRes.json();
+        contextBlock = ctx.context || '';
       }
+    } catch {}
+
+    // Add to history
+    brainHistory.push({ role: 'user', content: question });
+
+    try {
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 1000,
+          system: `You are the Operative Marketing Brain — an AI intelligence layer for Chris Hession, VP of Global Marketing at Operative.
+
+Operative sells: AOS (Ad Operating System — OMS for digital media), STAQ (analytics and data unification), Adeline AI (agentic AI layer), and OnAir (linear ad management). Customers are enterprise broadcasters, premium publishers, streaming platforms, sports media, and digital media companies.
+
+Primary competitors: Boostr, Fattail, Advendio, Placements.io, WideOrbit, Mediagenix.
+
+${contextBlock ? 'CONTEXT FROM KNOWLEDGE BASE:
+' + contextBlock.slice(0, 3000) : ''}
+
+You have access to Operative's ICP documents, competitive intelligence, brand voice, and campaign learnings. You do NOT yet have Salesforce access (coming soon) but can reason from what you know.
+
+Answer questions about pipeline strategy, competitive positioning, campaign performance, market intelligence, and marketing execution. Be direct, specific, and actionable. Write like a sharp marketing strategist, not a generic AI. No em-dashes.`,
+          messages: brainHistory
+        })
+      });
+
+      const data = await res.json();
+      const reply = data.content?.[0]?.text || 'Something went wrong. Try again.';
+
+      // Add assistant reply to history
+      brainHistory.push({ role: 'assistant', content: reply });
+
+      // Remove thinking, add response
+      document.getElementById(thinkingId)?.remove();
+
+      const formatted = reply
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/
+
+/g, '</p><p>')
+        .replace(/
+/g, '<br>');
+
+      messages.innerHTML += `
+        <div class="brain-message">
+          <div class="brain-avatar ai">✦</div>
+          <div class="brain-bubble"><p>${formatted}</p></div>
+        </div>`;
+
+    } catch (err) {
+      document.getElementById(thinkingId)?.remove();
+      messages.innerHTML += `
+        <div class="brain-message">
+          <div class="brain-avatar ai">✦</div>
+          <div class="brain-bubble" style="color:var(--red)">Could not connect to the brain. Check your API key.</div>
+        </div>`;
     }
 
-    function agentColor(agent) {
-      if (!agent) return 'context';
-      const a = agent.toLowerCase();
-      if (a.includes('aos')) return 'aos';
-      if (a.includes('staq')) return 'staq';
-      if (a.includes('competitive') || a.includes('boostr') || a.includes('fattail') ||
-          a.includes('advendio') || a.includes('placements') || a.includes('wideorbit') ||
-          a.includes('mediagenix')) return 'competitive';
-      return 'context';
+    messages.scrollTop = messages.scrollHeight;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+
+  // ── Navigation ──
+  function switchView(view) {
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+
+    const navEl = document.querySelector(`.nav-item[onclick="switchView('${view}')"]`);
+    if (navEl) navEl.classList.add('active');
+
+    const viewEl = document.getElementById(`view-${view}`);
+    if (viewEl) viewEl.classList.add('active');
+
+    if (view === 'emails' && !window._emailContactsLoaded) {
+      window._emailContactsLoaded = true;
+      loadContacts('aos');
+      loadEmailMetrics();
     }
 
-    function formatAgentName(agent) {
-      const names = {
-        'aos': 'AOS Nurture',
-        'staq': 'STAQ',
-        'competitive': 'Competitive',
-        'context': 'Context Layer'
-      };
-      return names[agent] || agent;
+    if (view === 'context' && !window._editorToken) {
+      document.getElementById('authOverlay').classList.add('open');
+      setTimeout(() => document.getElementById('authPassword').focus(), 200);
+    } else if (view === 'context' && window._editorToken) {
+      loadFileTree();
     }
 
-    // ── Load agent status ──
-    async function loadStatus() {
-      try {
-        const res = await fetch('/api/status');
-        const agents = await res.json();
-        renderAgents(agents);
-        document.getElementById('lastUpdated').textContent =
-          'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-      } catch (err) {
-        document.getElementById('lastUpdated').textContent = 'Status check failed';
-      }
+    if (view === 'competitive') {
+      loadCompetitiveFeed();
     }
+  }
 
-    function renderAgents(agents) {
-      const grid = document.getElementById('agentGrid');
-      const agentColors = {
-        'context': 'context',
-        'aos': 'aos',
-        'staq': 'staq',
-        'competitive': 'competitive'
-      };
+  // ── Agent status ──
+  async function loadStatus() {
+    try {
+      const res = await fetch('/api/status');
+      const agents = await res.json();
+      renderAgents(agents);
 
-      grid.innerHTML = agents.map(agent => {
-        const status = agent.status;
-        const detail = agent.detail;
-        let detailText = status === 'online' ? 'Running normally' : 'Not reachable';
-        if (detail?.schedule) detailText = `Schedule: ${detail.schedule}`;
-        if (detail?.status) detailText = detail.status;
+      const online = agents.filter(a => a.status === 'online').length;
+      document.getElementById('statActiveAgents').textContent = online;
+      document.getElementById('statTotalAgents').textContent = agents.length;
+      document.getElementById('topbarTime').textContent = 'Updated ' + new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    } catch (err) {
+      document.getElementById('topbarTime').textContent = 'Status check failed';
+    }
+  }
 
-        return `
-          <div class="agent-card ${status}">
-            <div class="agent-status-row">
-              <div class="status-dot ${status}"></div>
-              <div class="status-text ${status}">${status === 'online' ? 'Online' : status === 'offline' ? 'Offline' : 'Checking'}</div>
-            </div>
-            <div class="agent-name">${agent.name}</div>
-            <div class="agent-detail">${detailText}</div>
+  function renderAgents(agents) {
+    const grid = document.getElementById('agentGrid');
+    const liveCards = agents.map(agent => {
+      const s = agent.status;
+      const statusClass = s === 'online' ? 'online' : 'offline';
+      const cardClass = s === 'online' ? 'status-online' : 'status-offline';
+      let detail = s === 'online' ? 'Running normally' : 'Not reachable';
+      if (agent.detail?.schedule) detail = `Schedule: ${agent.detail.schedule}`;
+      if (agent.detail?.status && agent.detail.status !== 'online') detail = agent.detail.status;
+      return `
+        <div class="agent-card ${cardClass}">
+          <div class="agent-status-row">
+            <div class="agent-dot ${statusClass}"></div>
+            <div class="agent-status-text ${statusClass}">${s === 'online' ? 'Online' : 'Offline'}</div>
           </div>
-        `;
-      }).join('');
-    }
+          <div class="agent-name">${agent.name}</div>
+          <div class="agent-detail">${detail}</div>
+        </div>`;
+    }).join('');
 
-    // ── Run competitor research ──
-    async function runCompetitor(competitor) {
-      const label = competitor || 'All competitors';
-      showToast(`Starting research: ${label}...`, 'info');
+    // Keep the "coming soon" cards (everything after index 3)
+    const allCards = grid.querySelectorAll('.agent-card');
+    const soonCards = Array.from(allCards).slice(4).map(c => c.outerHTML).join('');
+    grid.innerHTML = liveCards + soonCards;
+  }
 
-      try {
-        const res = await fetch('/api/run-competitive', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(competitor ? { competitor } : {})
-        });
-        const data = await res.json();
-        showToast(`${label} research queued. Check back in a few minutes.`, 'success');
-      } catch (err) {
-        showToast('Failed to trigger research. Check agent status.', 'error');
-      }
-    }
+  // ── Context health ──
+  async function loadContextHealth() {
+    try {
+      const res = await fetch('/api/context-health');
+      if (!res.ok) throw new Error('Failed');
+      const data = await res.json();
+      renderHealthBar(data);
 
-    // ── Submit learning ──
-    async function submitLearning() {
-      const agent = document.getElementById('learningAgent').value;
-      const note = document.getElementById('learningNote').value.trim();
+      // Update context files count
+      const total = (data.sections.global?.length || 0) + (data.sections.agents?.length || 0) + (data.sections.learnings?.length || 0);
+      document.getElementById('statContextFiles').textContent = total;
+    } catch {}
+  }
 
-      if (!note) {
-        showToast('Please enter a note before saving.', 'error');
+  function renderHealthBar(data) {
+    const sections = [
+      { key: 'global', label: 'Global Files', maxAgeDays: 180 },
+      { key: 'agents', label: 'Agent Files', maxAgeDays: 180 },
+      { key: 'learnings', label: 'Learnings', maxAgeDays: 60 }
+    ];
+
+    document.getElementById('healthBar').innerHTML = sections.map(s => {
+      const files = data.sections[s.key] || [];
+      const stale = files.filter(f => f.stale);
+      const oldest = files.reduce((m, f) => f.ageDays > m ? f.ageDays : m, 0);
+      const status = stale.length === 0 ? 'healthy' : 'stale';
+      const icon = status === 'healthy' ? '✓' : '⚠';
+      const iconBg = status === 'healthy' ? 'var(--green-dim)' : 'var(--red-dim)';
+      const detail = files.length === 0 ? 'No files' : status === 'healthy'
+        ? `${files.length} file${files.length > 1 ? 's' : ''}, updated ${oldest === 0 ? 'today' : oldest + 'd ago'}`
+        : stale.map(f => f.name).join(', ');
+
+      return `
+        <div class="health-card">
+          <div class="health-icon" style="background:${iconBg}">${icon}</div>
+          <div>
+            <div class="health-label">${s.label}</div>
+            <div class="health-value ${status}">${status === 'healthy' ? 'Up to date' : stale.length + ' stale'}</div>
+            <div class="health-detail">${detail}</div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // ── Learnings feed ──
+  async function loadLearnings() {
+    const feed = document.getElementById('activityFeed');
+    try {
+      const res = await fetch('/api/learnings');
+      if (!res.ok) throw new Error('Failed');
+      const entries = await res.json();
+
+      if (!entries.length) {
+        feed.innerHTML = '<div class="editor-empty">No learnings yet. Add one or trigger a competitive research run.</div>';
         return;
       }
 
-      const btn = document.getElementById('submitLearning');
-      btn.disabled = true;
-      btn.textContent = 'Saving...';
-
-      try {
-        const res = await fetch('/api/learnings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ agent, note })
-        });
-
-        if (res.ok) {
-          showToast('Learning saved to context layer.', 'success');
-          document.getElementById('learningNote').value = '';
-          setTimeout(loadLearnings, 500); // refresh feed after save
-        } else {
-          throw new Error('Save failed');
-        }
-      } catch (err) {
-        showToast('Failed to save learning. Check context service.', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Save to Context Layer';
-      }
-    }
-
-    // ── Toast ──
-    let toastTimer;
-    function showToast(message, type = 'info') {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = `toast ${type} show`;
-      clearTimeout(toastTimer);
-      toastTimer = setTimeout(() => {
-        toast.className = 'toast';
-      }, 3500);
-    }
-
-
-
-
-
-    // ── Email Metrics ──
-    async function loadEmailMetrics() {
-      const section = document.getElementById('emailMetricsSection');
-      if (!section) return;
-
-      try {
-        const res = await fetch('/api/email-metrics');
-        const metrics = await res.json();
-
-        if (metrics.error) {
-          section.innerHTML = `<div class="metrics-loading">Could not load metrics: ${metrics.error}</div>`;
-          return;
-        }
-
-        const aos = metrics.filter(m => m.name.startsWith('AOS'));
-        const staq = metrics.filter(m => m.name.startsWith('STAQ'));
-
-        function renderGroup(items, label) {
-          return `
-            <div class="metrics-section">
-              <div class="metrics-group-label">${label}</div>
-              <div class="metrics-grid">
-                ${items.map(m => `
-                  <div class="metric-card ${m.found ? '' : 'not-found'}">
-                    <div class="metric-email-name">${m.name.replace('AOS Nurture ', '').replace('STAQ Nurture ', '')}</div>
-                    <div class="metric-stats">
-                      <div class="metric-stat">
-                        <div class="metric-value">${m.found ? m.sent.toLocaleString() : '--'}</div>
-                        <div class="metric-label">Sent</div>
-                      </div>
-                      <div class="metric-stat">
-                        <div class="metric-value highlight">${m.found ? m.openRate + '%' : '--'}</div>
-                        <div class="metric-label">Open Rate</div>
-                      </div>
-                      <div class="metric-stat">
-                        <div class="metric-value highlight">${m.found ? m.clickRate + '%' : '--'}</div>
-                        <div class="metric-label">CTR</div>
-                      </div>
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        section.innerHTML = renderGroup(aos, 'AOS Prospecting') + renderGroup(staq, 'STAQ Prospecting');
-
-      } catch (err) {
-        section.innerHTML = `<div class="metrics-loading">Could not load metrics.</div>`;
-      }
-    }
-
-    // ── Email Output Viewer ──
-    let currentEmailAgent = 'aos';
-    let currentContact = null;
-    let currentEmailIdx = 0;
-
-    async function switchEmailAgent(agent) {
-      currentEmailAgent = agent;
-      currentContact = null;
-
-      document.getElementById('toggleAOS').classList.toggle('active', agent === 'aos');
-      document.getElementById('toggleSTAQ').classList.toggle('active', agent === 'staq');
-
-      document.getElementById('emailPanel').innerHTML = '<div class="email-empty">Select a contact to view their generated emails.</div>';
-      await loadContacts(agent);
-    }
-
-    async function loadContacts(agent) {
-      const list = document.getElementById('contactList');
-      list.innerHTML = '<div class="contact-loading">Loading contacts...</div>';
-
-      try {
-        const res = await fetch(`/api/email-outputs?agent=${agent}`);
-        const contacts = await res.json();
-
-        if (!contacts.length) {
-          list.innerHTML = '<div class="contact-loading">No contacts with generated emails found.</div>';
-          return;
-        }
-
-        window._emailContacts = contacts;
-        list.innerHTML = contacts.map((c, idx) => `
-          <div class="contact-item" onclick="selectContact(${idx})" data-idx="${idx}">
-            <div class="contact-name">${c.firstname} ${c.lastname}</div>
-            <div class="contact-meta">${c.company || c.email}</div>
-          </div>
-        `).join('');
-      } catch (err) {
-        list.innerHTML = '<div class="contact-loading">Could not load contacts.</div>';
-      }
-    }
-
-    function selectContact(idx) {
-      currentContact = window._emailContacts[idx];
-      currentEmailIdx = 0;
-
-      document.querySelectorAll('.contact-item').forEach((el, i) => {
-        el.classList.toggle('active', i === idx);
-      });
-
-      renderEmailPanel();
-    }
-
-    function renderEmailPanel() {
-      const c = currentContact;
-      if (!c) return;
-
-      const emailLabels = ['Email 1', 'Email 2', 'Email 3'];
-      const tabs = emailLabels.map((label, i) => `
-        <button class="email-tab ${i === currentEmailIdx ? 'active' : ''}" onclick="selectEmailTab(${i})">${label}</button>
-      `).join('');
-
-      const emailBody = c.emails[currentEmailIdx] || '';
-
-      document.getElementById('emailPanel').innerHTML = `
-        <div class="email-panel-header">
-          <div class="email-contact-name">${c.firstname} ${c.lastname}</div>
-          <div class="email-contact-meta">${c.jobtitle ? c.jobtitle + ' · ' : ''}${c.company} · ${c.email}</div>
-        </div>
-        <div class="email-tabs">${tabs}</div>
-        <div class="email-body" id="emailBodyContent">${emailBody || '<span style="color:var(--muted)">No email generated for this slot.</span>'}</div>
-      `;
-    }
-
-    function selectEmailTab(idx) {
-      currentEmailIdx = idx;
-      renderEmailPanel();
-    }
-
-    // Load contacts when switching to email tab
-    const _origSwitchTab = switchTab;
-
-    // ── Tab switching ──
-    function switchTab(tab) {
-      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-      document.querySelector(`.nav-tab[onclick="switchTab('${tab}')"]`).classList.add('active');
-      document.getElementById(`view-${tab}`).classList.add('active');
-
-      if (tab === 'emails' && !window._emailContactsLoaded) {
-        window._emailContactsLoaded = true;
-        loadContacts('aos');
-        loadEmailMetrics();
-      }
-      if (tab === 'context') {
-        if (!window._editorToken) {
-          document.getElementById('authOverlay').classList.add('open');
-          setTimeout(() => document.getElementById('authPassword').focus(), 200);
-        } else {
-          loadFileTree();
-        }
-      }
-    }
-
-    // ── Auth ──
-    async function submitAuth() {
-      const password = document.getElementById('authPassword').value;
-      const errEl = document.getElementById('authError');
-      errEl.style.display = 'none';
-
-      try {
-        const res = await fetch('/api/auth', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password })
-        });
-        const data = await res.json();
-        if (data.ok) {
-          window._editorToken = data.token;
-          document.getElementById('authOverlay').classList.remove('open');
-          document.getElementById('authPassword').value = '';
-          loadFileTree();
-        } else {
-          errEl.style.display = 'block';
-        }
-      } catch (err) {
-        errEl.textContent = 'Connection error. Try again.';
-        errEl.style.display = 'block';
-      }
-    }
-
-    // ── File tree ──
-    async function loadFileTree() {
-      const tree = document.getElementById('fileTree');
-      try {
-        const res = await fetch('/api/context/files', {
-          headers: { 'x-editor-token': window._editorToken }
-        });
-        if (res.status === 401) { window._editorToken = null; return; }
-        const files = await res.json();
-
-        const sections = { global: 'Global', agents: 'Agents', learnings: 'Learnings' };
-        let html = '';
-        for (const [key, label] of Object.entries(sections)) {
-          const items = files[key] || [];
-          html += `<div class="file-tree-section">
-            <div class="file-tree-header">${label}</div>
-            ${items.map(f => `
-              <div class="file-tree-item" onclick="loadFile('${f.path}')" data-path="${f.path}">
-                ${f.name}
-              </div>
-            `).join('')}
-          </div>`;
-        }
-        html += `
-          <div class="file-tree-new">
-            <button class="new-file-btn" onclick="showNewFileForm()">+ New File</button>
-          </div>
-          <div class="new-file-form" id="newFileForm">
-            <select class="new-file-input" id="newFileSection">
-              <option value="global">global/</option>
-              <option value="agents">agents/</option>
-              <option value="learnings">learnings/</option>
-            </select>
-            <input class="new-file-input" id="newFileName" placeholder="filename.md" onkeydown="if(event.key==='Enter') createNewFile()" />
-            <div class="new-file-actions">
-              <button class="new-file-create" onclick="createNewFile()">Create</button>
-              <button class="new-file-cancel" onclick="hideNewFileForm()">Cancel</button>
-            </div>
-          </div>
-          <div class="file-tree-new">
-            <button class="new-file-btn" onclick="showUploadPanel()">&#8593; Upload File</button>
-          </div>
-        `;
-        tree.innerHTML = html;
-      } catch (err) {
-        tree.innerHTML = '<div class="editor-empty">Could not load files.</div>';
-      }
-    }
-
-    // ── File viewer/editor ──
-    let currentFile = null;
-    let isEditing = false;
-
-    async function loadFile(filePath) {
-      // Mark active in tree
-      document.querySelectorAll('.file-tree-item').forEach(el => {
-        el.classList.toggle('active', el.dataset.path === filePath);
-      });
-
-      const panel = document.getElementById('editorPanel');
-      panel.innerHTML = '<div class="editor-empty">Loading...</div>';
-      currentFile = filePath;
-      isEditing = false;
-
-      try {
-        const res = await fetch(`/api/context/file?path=${encodeURIComponent(filePath)}`, {
-          headers: { 'x-editor-token': window._editorToken }
-        });
-        const data = await res.json();
-        renderViewer(filePath, data.content);
-      } catch (err) {
-        panel.innerHTML = '<div class="editor-empty">Could not load file.</div>';
-      }
-    }
-
-    function renderViewer(filePath, content) {
-      const panel = document.getElementById('editorPanel');
-      panel.innerHTML = `
-        <div class="file-editor-header">
-          <div class="file-editor-path">${filePath}</div>
-          <div class="editor-actions">
-            <button class="edit-btn" onclick="startEditing('${filePath}')">Edit</button>
-          </div>
-        </div>
-        <div class="file-content-view">${escapeHtml(content)}</div>
-      `;
-      panel._content = content;
-    }
-
-    function startEditing(filePath) {
-      const panel = document.getElementById('editorPanel');
-      const current = panel._content || '';
-      panel.innerHTML = `
-        <div class="file-editor-header">
-          <div class="file-editor-path">${filePath} <span style="color:var(--orange);margin-left:0.5rem;">editing</span></div>
-          <div class="editor-actions">
-            <button class="edit-btn cancel" onclick="loadFile('${filePath}')">Cancel</button>
-            <button class="edit-btn save" onclick="saveFile('${filePath}')">Save</button>
-          </div>
-        </div>
-        <textarea class="file-content-edit" id="fileEditArea">${escapeHtml(current)}</textarea>
-      `;
-      document.getElementById('fileEditArea').focus();
-    }
-
-    async function saveFile(filePath) {
-      const content = document.getElementById('fileEditArea').value;
-      try {
-        const res = await fetch('/api/context/file', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-editor-token': window._editorToken
-          },
-          body: JSON.stringify({ path: filePath, content })
-        });
-        if (res.ok) {
-          showToast('File saved to context layer.', 'success');
-          loadFile(filePath);
-        } else {
-          showToast('Save failed. Check context service.', 'error');
-        }
-      } catch (err) {
-        showToast('Save failed. Check context service.', 'error');
-      }
-    }
-
-
-    function showNewFileForm() {
-      document.getElementById('newFileForm').classList.add('open');
-      setTimeout(() => document.getElementById('newFileName').focus(), 100);
-    }
-
-    function hideNewFileForm() {
-      document.getElementById('newFileForm').classList.remove('open');
-      document.getElementById('newFileName').value = '';
-    }
-
-    async function createNewFile() {
-      const section = document.getElementById('newFileSection').value;
-      let name = document.getElementById('newFileName').value.trim();
-      if (!name) return;
-      if (!name.endsWith('.md')) name += '.md';
-      const filePath = `${section}/${name}`;
-
-      try {
-        const res = await fetch('/api/context/file', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-editor-token': window._editorToken
-          },
-          body: JSON.stringify({ path: filePath, content: `# ${name.replace('.md', '')}
-
-` })
-        });
-
-        if (res.ok) {
-          showToast(`Created ${filePath}`, 'success');
-          hideNewFileForm();
-          await loadFileTree();
-          loadFile(filePath);
-        } else {
-          showToast('Could not create file.', 'error');
-        }
-      } catch (err) {
-        showToast('Could not create file.', 'error');
-      }
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-
-
-    // ── Context health ──
-    async function loadContextHealth() {
-      try {
-        const res = await fetch('/api/context-health');
-        if (!res.ok) throw new Error('Failed');
-        const data = await res.json();
-        renderHealthBar(data);
-      } catch (err) {
-        document.getElementById('healthBar').innerHTML = '<div style="color:var(--muted);font-size:0.8rem;">Could not load context health.</div>';
-      }
-    }
-
-    function renderHealthBar(data) {
-      const sections = [
-        { key: 'global', label: 'Global Files', maxAgeDays: 180 },
-        { key: 'agents', label: 'Agent Files', maxAgeDays: 180 },
-        { key: 'learnings', label: 'Learnings', maxAgeDays: 60 }
-      ];
-
-      const bar = document.getElementById('healthBar');
-      bar.innerHTML = sections.map(section => {
-        const files = data.sections[section.key] || [];
-        const stale = files.filter(f => f.stale);
-        const oldest = files.reduce((max, f) => f.ageDays > max ? f.ageDays : max, 0);
-        const status = stale.length === 0 ? 'healthy' : 'stale';
-        const icon = status === 'healthy' ? '&#10003;' : '&#9888;';
-        const valueText = status === 'healthy' ? 'Up to date' : `${stale.length} file${stale.length > 1 ? 's' : ''} stale`;
-        const detailText = files.length === 0 ? 'No files found' :
-          status === 'healthy' ? `${files.length} file${files.length > 1 ? 's' : ''}, last updated ${oldest === 0 ? 'today' : oldest + 'd ago'}` :
-          stale.map(f => f.name).join(', ');
-
+      window._learningsData = entries;
+      feed.innerHTML = entries.map((item, idx) => {
+        const agentKey = agentColor(item.agent);
+        const preview = item.note.slice(0, 140) + (item.note.length > 140 ? '...' : '');
         return `
-          <div class="health-card" style="cursor:${stale.length ? 'pointer' : 'default'}" ${stale.length ? `onclick="showStaleFiles('${section.key}', ${JSON.stringify(stale).replace(/"/g, '&quot;')})"` : ''}>
-            <div class="health-icon ${status}">${icon}</div>
-            <div class="health-info">
-              <div class="health-label">${section.label}</div>
-              <div class="health-value ${status}">${valueText}</div>
-              <div class="health-detail">${detailText}</div>
+          <div class="learning-item" onclick="openReport(${idx})">
+            <div class="learning-bar ${agentKey}"></div>
+            <div style="flex:1;">
+              <div>
+                <span class="learning-agent ${agentKey}">${item.agent}</span>
+                <span class="learning-date">${item.date}</span>
+              </div>
+              <div class="learning-text">${preview}</div>
+              <div class="learning-hint">Click to read full report</div>
             </div>
-          </div>
-        `;
+          </div>`;
       }).join('');
+    } catch {
+      feed.innerHTML = '<div class="editor-empty">Could not load learnings.</div>';
     }
+  }
 
-    function showStaleFiles(section, files) {
-      const names = files.map(f => `${f.name} (${f.ageDays}d old)`).join(', ');
-      showToast(`Stale in ${section}: ${names}`, 'error');
-    }
+  function agentColor(agent) {
+    if (!agent) return 'context';
+    const a = agent.toLowerCase();
+    if (a.includes('aos')) return 'aos';
+    if (a.includes('staq')) return 'staq';
+    if (a.includes('competitive') || a.includes('boostr') || a.includes('fattail') ||
+        a.includes('advendio') || a.includes('placements') || a.includes('wideorbit') ||
+        a.includes('mediagenix')) return 'competitive';
+    return 'context';
+  }
 
-    // ── Upload ──
-    function showUploadPanel() {
-      document.getElementById('editorPanel').style.display = 'none';
-      document.getElementById('uploadPanel').style.display = 'flex';
-      resetUpload();
-    }
+  // ── Competitive feed ──
+  async function loadCompetitiveFeed() {
+    const feed = document.getElementById('competitiveFeed');
+    if (!feed) return;
+    try {
+      const res = await fetch('/api/learnings');
+      const entries = await res.json();
+      const competitive = entries.filter(e => agentColor(e.agent) === 'competitive');
 
-    function hideUploadPanel() {
-      document.getElementById('uploadPanel').style.display = 'none';
-      document.getElementById('editorPanel').style.display = 'flex';
-    }
-
-    function resetUpload() {
-      document.getElementById('uploadDropZone').style.display = 'block';
-      document.getElementById('uploadProcessing').style.display = 'none';
-      document.getElementById('uploadPreview').classList.remove('open');
-      document.getElementById('fileInput').value = '';
-    }
-
-    function handleDragOver(e) {
-      e.preventDefault();
-      document.getElementById('dropZone').classList.add('dragover');
-    }
-
-    function handleDragLeave(e) {
-      document.getElementById('dropZone').classList.remove('dragover');
-    }
-
-    function handleDrop(e) {
-      e.preventDefault();
-      document.getElementById('dropZone').classList.remove('dragover');
-      const file = e.dataTransfer.files[0];
-      if (file) processUpload(file);
-    }
-
-    function handleFileSelect(e) {
-      const file = e.target.files[0];
-      if (file) processUpload(file);
-    }
-
-    async function processUpload(file) {
-      document.getElementById('uploadDropZone').style.display = 'none';
-      document.getElementById('uploadProcessing').style.display = 'block';
-
-      const formData = new FormData();
-      formData.append('file', file);
-
-      try {
-        const res = await fetch('/api/context/upload', {
-          method: 'POST',
-          headers: { 'x-editor-token': window._editorToken },
-          body: formData
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          showToast(data.error || 'Upload failed.', 'error');
-          resetUpload();
-          return;
-        }
-
-        document.getElementById('uploadProcessing').style.display = 'none';
-        document.getElementById('uploadFileName').value = data.suggestedName;
-        document.getElementById('uploadPreviewContent').textContent = data.content;
-        document.getElementById('uploadPreview').classList.add('open');
-        window._uploadedContent = data.content;
-
-      } catch (err) {
-        showToast('Upload failed. Check connection.', 'error');
-        resetUpload();
+      if (!competitive.length) {
+        feed.innerHTML = '<div class="editor-empty">No competitive reports yet. Run a research job above.</div>';
+        return;
       }
+
+      window._learningsData = window._learningsData || entries;
+      feed.innerHTML = competitive.map((item, idx) => {
+        const realIdx = entries.indexOf(item);
+        const preview = item.note.slice(0, 200) + (item.note.length > 200 ? '...' : '');
+        return `
+          <div class="learning-item" onclick="openReport(${realIdx})">
+            <div class="learning-bar competitive"></div>
+            <div style="flex:1;">
+              <div>
+                <span class="learning-agent competitive">${item.agent}</span>
+                <span class="learning-date">${item.date}</span>
+              </div>
+              <div class="learning-text">${preview}</div>
+              <div class="learning-hint">Click to read full report</div>
+            </div>
+          </div>`;
+      }).join('');
+    } catch {
+      feed.innerHTML = '<div class="editor-empty">Could not load reports.</div>';
     }
+  }
 
-    async function saveUploadedFile() {
-      const section = document.getElementById('uploadSection').value;
-      let name = document.getElementById('uploadFileName').value.trim();
-      if (!name) { showToast('Enter a filename.', 'error'); return; }
-      if (!name.endsWith('.md')) name += '.md';
-      const filePath = `${section}/${name}`;
-      const content = window._uploadedContent;
+  // ── Submit learning ──
+  async function submitLearning() {
+    const agent = document.getElementById('learningAgent').value;
+    const note = document.getElementById('learningNote').value.trim();
+    if (!note) { showToast('Please enter a note.', 'error'); return; }
 
-      try {
-        const res = await fetch('/api/context/file', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-editor-token': window._editorToken
-          },
-          body: JSON.stringify({ path: filePath, content })
-        });
+    const btn = document.getElementById('submitLearning');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
 
-        if (res.ok) {
-          showToast(`Saved to ${filePath}`, 'success');
-          hideUploadPanel();
-          await loadFileTree();
-          loadFile(filePath);
-        } else {
-          showToast('Save failed.', 'error');
-        }
-      } catch (err) {
+    try {
+      const res = await fetch('/api/learnings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent, note })
+      });
+      if (res.ok) {
+        showToast('Learning saved to context layer.', 'success');
+        document.getElementById('learningNote').value = '';
+        setTimeout(loadLearnings, 500);
+      } else {
         showToast('Save failed.', 'error');
       }
-    }
+    } catch { showToast('Save failed.', 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Save to Context Layer'; }
+  }
 
-    // ── Report Modal ──
-    function openReport(idx) {
-      const item = window._learningsData[idx];
-      if (!item) return;
-      document.getElementById('modalTitle').textContent = item.agent;
-      document.getElementById('modalMeta').textContent = item.date;
-      document.getElementById('modalBody').textContent = item.note;
-      document.getElementById('reportModal').classList.add('open');
-    }
+  // ── Run competitor ──
+  async function runCompetitor(competitor) {
+    const label = competitor || 'All competitors';
+    showToast(`Research queued: ${label}`, 'success');
+    try {
+      await fetch('/api/run-competitive', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(competitor ? { competitor } : {})
+      });
+    } catch { showToast('Failed to trigger. Check agent status.', 'error'); }
+  }
 
-    function closeReportModal() {
-      document.getElementById('reportModal').classList.remove('open');
-    }
+  // ── Email metrics ──
+  async function loadEmailMetrics() {
+    const section = document.getElementById('emailMetricsSection');
+    if (!section) return;
+    try {
+      const res = await fetch('/api/email-metrics');
+      const metrics = await res.json();
+      if (metrics.error) { section.innerHTML = `<div style="padding:1rem;color:var(--muted);font-size:0.78rem;">Could not load metrics: ${metrics.error}</div>`; return; }
+      const aos = metrics.filter(m => m.group === 'AOS');
+      const staq = metrics.filter(m => m.group === 'STAQ');
 
-    function closeModal(e) {
-      if (e.target.id === 'reportModal') closeReportModal();
-    }
+      function renderGroup(items, label) {
+        return `<div class="metrics-section">
+          <div class="metrics-group-label">${label}</div>
+          <div class="metrics-row">
+            ${items.map(m => `
+              <div class="metric-card ${m.found ? '' : 'not-found'}">
+                <div class="metric-email-name">${m.name.replace('AOS Nurture ', '').replace('STAQ Nurture ', '')}</div>
+                <div class="metric-stats">
+                  <div class="metric-stat"><div class="metric-value">${m.found ? m.sent.toLocaleString() : '--'}</div><div class="metric-label">Sent</div></div>
+                  <div class="metric-stat"><div class="metric-value accent">${m.found ? m.openRate + '%' : '--'}</div><div class="metric-label">Open Rate</div></div>
+                  <div class="metric-stat"><div class="metric-value accent">${m.found ? m.clickRate + '%' : '--'}</div><div class="metric-label">CTR</div></div>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`;
+      }
 
-    // ── Init ──
-    function loadAll() {
-      loadStatus();
-      loadLearnings();
-      loadContextHealth();
-    }
+      section.innerHTML = renderGroup(aos, 'AOS Prospecting') + renderGroup(staq, 'STAQ Prospecting');
+    } catch { section.innerHTML = '<div style="padding:1rem;color:var(--muted);font-size:0.78rem;">Could not load metrics.</div>'; }
+  }
 
-    loadAll();
-    setInterval(loadStatus, 60000); // refresh status every 60s
-    setInterval(loadLearnings, 30000); // refresh learnings every 30s
-    setInterval(loadContextHealth, 300000); // refresh health every 5 min
-  </script>
-  </div><!-- end page-container -->
+  // ── Email contact viewer ──
+  let currentEmailAgent = 'aos';
+
+  async function switchEmailAgent(agent) {
+    currentEmailAgent = agent;
+    document.getElementById('toggleAOS').classList.toggle('active', agent === 'aos');
+    document.getElementById('toggleSTAQ').classList.toggle('active', agent === 'staq');
+    document.getElementById('emailPanel').innerHTML = '<div class="email-empty">Select a contact to view their generated emails.</div>';
+    await loadContacts(agent);
+  }
+
+  async function loadContacts(agent) {
+    const list = document.getElementById('contactList');
+    list.innerHTML = '<div class="contact-loading">Loading...</div>';
+    try {
+      const res = await fetch(`/api/email-outputs?agent=${agent}`);
+      const contacts = await res.json();
+      if (!contacts.length) { list.innerHTML = '<div class="contact-loading">No contacts found.</div>'; return; }
+      window._emailContacts = contacts;
+      list.innerHTML = contacts.map((c, idx) => `
+        <div class="contact-item" onclick="selectContact(${idx})" data-idx="${idx}">
+          <div class="contact-name">${c.firstname} ${c.lastname}</div>
+          <div class="contact-meta">${c.company || c.email}</div>
+        </div>`).join('');
+    } catch { list.innerHTML = '<div class="contact-loading">Could not load contacts.</div>'; }
+  }
+
+  let currentContact = null;
+  let currentEmailIdx = 0;
+
+  function selectContact(idx) {
+    currentContact = window._emailContacts[idx];
+    currentEmailIdx = 0;
+    document.querySelectorAll('.contact-item').forEach((el, i) => el.classList.toggle('active', i === idx));
+    renderEmailPanel();
+  }
+
+  function renderEmailPanel() {
+    const c = currentContact;
+    if (!c) return;
+    const tabs = ['Email 1', 'Email 2', 'Email 3'].map((label, i) =>
+      `<button class="email-tab ${i === currentEmailIdx ? 'active' : ''}" onclick="selectEmailTab(${i})">${label}</button>`).join('');
+    const body = c.emails[currentEmailIdx] || '<span style="color:var(--muted)">No email for this slot.</span>';
+    document.getElementById('emailPanel').innerHTML = `
+      <div class="email-panel-header">
+        <div class="email-contact-name">${c.firstname} ${c.lastname}</div>
+        <div class="email-contact-meta">${c.jobtitle ? c.jobtitle + ' · ' : ''}${c.company} · ${c.email}</div>
+      </div>
+      <div class="email-tabs">${tabs}</div>
+      <div class="email-body">${body}</div>`;
+  }
+
+  function selectEmailTab(idx) { currentEmailIdx = idx; renderEmailPanel(); }
+
+  // ── Auth ──
+  async function submitAuth() {
+    const password = document.getElementById('authPassword').value;
+    const errEl = document.getElementById('authError');
+    errEl.style.display = 'none';
+    try {
+      const res = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password }) });
+      const data = await res.json();
+      if (data.ok) {
+        window._editorToken = data.token;
+        document.getElementById('authOverlay').classList.remove('open');
+        document.getElementById('authPassword').value = '';
+        loadFileTree();
+      } else {
+        errEl.style.display = 'block';
+      }
+    } catch { errEl.textContent = 'Connection error.'; errEl.style.display = 'block'; }
+  }
+
+  // ── File tree ──
+  async function loadFileTree() {
+    const tree = document.getElementById('fileTree');
+    try {
+      const res = await fetch('/api/context/files', { headers: { 'x-editor-token': window._editorToken } });
+      if (res.status === 401) { window._editorToken = null; return; }
+      const files = await res.json();
+      const sections = { global: 'Global', agents: 'Agents', learnings: 'Learnings' };
+      let html = '';
+      for (const [key, label] of Object.entries(sections)) {
+        const items = files[key] || [];
+        html += `<div class="file-tree-section">
+          <div class="file-tree-header">${label}</div>
+          ${items.map(f => `<div class="file-tree-item" onclick="loadFile('${f.path}')" data-path="${f.path}">${f.name}</div>`).join('')}
+        </div>`;
+      }
+      html += `<div class="file-tree-new"><button class="new-file-btn" onclick="showNewFileForm()">+ New File</button></div>
+        <div class="new-file-form" id="newFileForm">
+          <select class="new-file-input" id="newFileSection"><option value="global">global/</option><option value="agents">agents/</option><option value="learnings">learnings/</option></select>
+          <input class="new-file-input" id="newFileName" placeholder="filename.md" onkeydown="if(event.key==='Enter') createNewFile()" />
+          <div class="new-file-actions">
+            <button class="new-file-create" onclick="createNewFile()">Create</button>
+            <button class="new-file-cancel" onclick="hideNewFileForm()">Cancel</button>
+          </div>
+        </div>
+        <div class="file-tree-new"><button class="new-file-btn" onclick="showUploadPanel()">⬆ Upload File</button></div>`;
+      tree.innerHTML = html;
+    } catch { tree.innerHTML = '<div class="editor-empty">Could not load files.</div>'; }
+  }
+
+  async function loadFile(filePath) {
+    document.querySelectorAll('.file-tree-item').forEach(el => el.classList.toggle('active', el.dataset.path === filePath));
+    const panel = document.getElementById('editorPanel');
+    panel.innerHTML = '<div class="editor-empty">Loading...</div>';
+    try {
+      const res = await fetch(`/api/context/file?path=${encodeURIComponent(filePath)}`, { headers: { 'x-editor-token': window._editorToken } });
+      const data = await res.json();
+      renderViewer(filePath, data.content);
+    } catch { panel.innerHTML = '<div class="editor-empty">Could not load file.</div>'; }
+  }
+
+  function renderViewer(filePath, content) {
+    const panel = document.getElementById('editorPanel');
+    panel.innerHTML = `
+      <div class="file-editor-header">
+        <div class="file-editor-path">${filePath}</div>
+        <div class="editor-actions"><button class="edit-btn" onclick="startEditing('${filePath}')">Edit</button></div>
+      </div>
+      <div class="file-content-view">${escapeHtml(content)}</div>`;
+    panel._content = content;
+  }
+
+  function startEditing(filePath) {
+    const panel = document.getElementById('editorPanel');
+    const current = panel._content || '';
+    panel.innerHTML = `
+      <div class="file-editor-header">
+        <div class="file-editor-path">${filePath} <span style="color:var(--orange);margin-left:0.5rem;font-size:0.65rem;">editing</span></div>
+        <div class="editor-actions">
+          <button class="edit-btn cancel" onclick="loadFile('${filePath}')">Cancel</button>
+          <button class="edit-btn save" onclick="saveFile('${filePath}')">Save</button>
+        </div>
+      </div>
+      <textarea class="file-content-edit" id="fileEditArea">${escapeHtml(current)}</textarea>`;
+    document.getElementById('fileEditArea').focus();
+  }
+
+  async function saveFile(filePath) {
+    const content = document.getElementById('fileEditArea').value;
+    try {
+      const res = await fetch('/api/context/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-editor-token': window._editorToken },
+        body: JSON.stringify({ path: filePath, content })
+      });
+      if (res.ok) { showToast('File saved.', 'success'); loadFile(filePath); }
+      else showToast('Save failed.', 'error');
+    } catch { showToast('Save failed.', 'error'); }
+  }
+
+  function showNewFileForm() { document.getElementById('newFileForm').classList.add('open'); setTimeout(() => document.getElementById('newFileName').focus(), 100); }
+  function hideNewFileForm() { document.getElementById('newFileForm').classList.remove('open'); document.getElementById('newFileName').value = ''; }
+
+  async function createNewFile() {
+    const section = document.getElementById('newFileSection').value;
+    let name = document.getElementById('newFileName').value.trim();
+    if (!name) return;
+    if (!name.endsWith('.md')) name += '.md';
+    const filePath = `${section}/${name}`;
+    try {
+      const res = await fetch('/api/context/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-editor-token': window._editorToken },
+        body: JSON.stringify({ path: filePath, content: `# ${name.replace('.md','')}\n\n` })
+      });
+      if (res.ok) { showToast(`Created ${filePath}`, 'success'); hideNewFileForm(); await loadFileTree(); loadFile(filePath); }
+      else showToast('Could not create file.', 'error');
+    } catch { showToast('Could not create file.', 'error'); }
+  }
+
+  // ── Upload ──
+  function showUploadPanel() { document.getElementById('editorPanel').style.display = 'none'; document.getElementById('uploadPanel').style.display = 'flex'; resetUpload(); }
+  function hideUploadPanel() { document.getElementById('uploadPanel').style.display = 'none'; document.getElementById('editorPanel').style.display = 'flex'; }
+  function resetUpload() { document.getElementById('uploadDropZone').style.display = 'block'; document.getElementById('uploadProcessing').style.display = 'none'; document.getElementById('uploadPreview').classList.remove('open'); document.getElementById('fileInput').value = ''; }
+  function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragover'); }
+  function handleDragLeave() { document.getElementById('dropZone').classList.remove('dragover'); }
+  function handleDrop(e) { e.preventDefault(); document.getElementById('dropZone').classList.remove('dragover'); const file = e.dataTransfer.files[0]; if (file) processUpload(file); }
+  function handleFileSelect(e) { const file = e.target.files[0]; if (file) processUpload(file); }
+
+  async function processUpload(file) {
+    document.getElementById('uploadDropZone').style.display = 'none';
+    document.getElementById('uploadProcessing').style.display = 'block';
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/api/context/upload', { method: 'POST', headers: { 'x-editor-token': window._editorToken }, body: formData });
+      const data = await res.json();
+      if (!res.ok) { showToast(data.error || 'Upload failed.', 'error'); resetUpload(); return; }
+      document.getElementById('uploadProcessing').style.display = 'none';
+      document.getElementById('uploadFileName').value = data.suggestedName;
+      document.getElementById('uploadPreviewContent').textContent = data.content;
+      document.getElementById('uploadPreview').classList.add('open');
+      window._uploadedContent = data.content;
+    } catch { showToast('Upload failed.', 'error'); resetUpload(); }
+  }
+
+  async function saveUploadedFile() {
+    const section = document.getElementById('uploadSection').value;
+    let name = document.getElementById('uploadFileName').value.trim();
+    if (!name) { showToast('Enter a filename.', 'error'); return; }
+    if (!name.endsWith('.md')) name += '.md';
+    const filePath = `${section}/${name}`;
+    try {
+      const res = await fetch('/api/context/file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-editor-token': window._editorToken },
+        body: JSON.stringify({ path: filePath, content: window._uploadedContent })
+      });
+      if (res.ok) { showToast(`Saved to ${filePath}`, 'success'); hideUploadPanel(); await loadFileTree(); loadFile(filePath); }
+      else showToast('Save failed.', 'error');
+    } catch { showToast('Save failed.', 'error'); }
+  }
+
+  function escapeHtml(str) { return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // ── Report modal ──
+  function openReport(idx) {
+    const item = window._learningsData?.[idx];
+    if (!item) return;
+    document.getElementById('modalTitle').textContent = item.agent;
+    document.getElementById('modalMeta').textContent = item.date;
+    document.getElementById('modalBody').textContent = item.note;
+    document.getElementById('reportModal').classList.add('open');
+  }
+
+  function closeReportModal() { document.getElementById('reportModal').classList.remove('open'); }
+  function closeModal(e) { if (e.target.id === 'reportModal') closeReportModal(); }
+
+  // ── Toast ──
+  let toastTimer;
+  function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = `toast ${type} show`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.className = 'toast'; }, 3500);
+  }
+
+  // ── Init ──
+  function loadAll() {
+    loadStatus();
+    loadLearnings();
+    loadContextHealth();
+  }
+
+  loadAll();
+  setInterval(loadStatus, 60000);
+  setInterval(loadLearnings, 30000);
+  setInterval(loadContextHealth, 300000);
+</script>
 </body>
 </html>
