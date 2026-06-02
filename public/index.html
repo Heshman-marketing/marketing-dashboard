@@ -126,9 +126,6 @@
     .email-body{flex:1;overflow-y:auto;padding:1.25rem;font-size:.82rem;line-height:1.7;color:var(--text-2)}
     .email-empty,.contact-loading{padding:2.5rem 1.25rem;text-align:center;color:var(--muted);font-size:.78rem}
     .context-layout{display:grid;grid-template-columns:210px 1fr;gap:1rem;min-height:600px}
-    #editorCol{display:flex;flex-direction:column;}
-    #editorCol .file-editor-panel{flex:1;display:none;}
-    #editorCol .file-editor-panel.active-panel{display:flex;}
     .file-tree{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
     .file-tree-section{border-bottom:1px solid var(--border-light)}.file-tree-section:last-child{border-bottom:none}
     .file-tree-header{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);padding:.625rem 1rem .375rem}
@@ -293,11 +290,6 @@
     .activity-time{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);white-space:nowrap;margin-top:1px}
     .home-agents-label{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--orange);margin-bottom:.75rem}
     .home-agent-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
-    .link-url-input{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.82rem;padding:.625rem .875rem;outline:none;margin-bottom:.75rem;transition:border-color .15s}
-    .link-url-input:focus{border-color:var(--orange)}
-    .link-fetch-btn{width:100%;background:var(--orange);border:none;border-radius:7px;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:.8rem;padding:.55rem 1rem;cursor:pointer;transition:opacity .15s;margin-bottom:.5rem}
-    .link-fetch-btn:hover{opacity:.85}.link-fetch-btn:disabled{opacity:.4;cursor:not-allowed}
-    .link-source-tag{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);padding:.375rem .875rem;letter-spacing:.03em;word-break:break-all}
   </style>
 </head>
 <body>
@@ -627,34 +619,7 @@
       <div class="page-header"><div><div class="page-title">Context Editor</div><div class="page-subtitle">View and edit the intelligence files every agent reads from</div></div></div>
       <div class="context-layout">
         <div class="file-tree" id="fileTree"><div class="editor-empty">Loading files...</div></div>
-        <div id="editorCol" style="position:relative;min-height:600px;">
-        <div class="file-editor-panel active-panel" id="editorPanel" style="height:100%;"><div class="editor-empty">Select a file from the left to view or edit it.</div></div>
-        <div class="file-editor-panel" id="linkPanel" style="display:none;">
-          <div class="file-editor-header">
-            <div class="file-editor-path">Link an article</div>
-            <button class="edit-btn cancel" onclick="hideLinkPanel()">Cancel</button>
-          </div>
-          <div id="linkFetchZone" style="padding:1.25rem;">
-            <div class="form-label">Article URL</div>
-            <input class="link-url-input" id="linkUrl" placeholder="https://example.com/article" onkeydown="if(event.key==='Enter') fetchArticle()" />
-            <button class="link-fetch-btn" id="linkFetchBtn" onclick="fetchArticle()">Fetch Article</button>
-          </div>
-          <div id="linkProcessing" style="display:none;"><div class="processing-state"><div class="processing-spinner"></div><div>Fetching and extracting article...</div></div></div>
-          <div class="upload-preview" id="linkPreview">
-            <div class="upload-preview-header">
-              <div class="upload-preview-fields">
-                <select class="new-file-input" id="linkSection" style="width:100px;flex-shrink:0;"><option value="global">global/</option><option value="agents">agents/</option><option value="learnings">learnings/</option></select>
-                <input class="new-file-input" id="linkFileName" placeholder="filename.md" style="flex:1;" />
-              </div>
-              <div class="editor-actions">
-                <button class="edit-btn cancel" onclick="resetLinkPanel()">Re-fetch</button>
-                <button class="edit-btn save" onclick="saveFetchedArticle()">Save to Context</button>
-              </div>
-            </div>
-            <div class="link-source-tag" id="linkSourceTag"></div>
-            <div class="upload-preview-content" id="linkPreviewContent"></div>
-          </div>
-        </div>
+        <div class="file-editor-panel" id="editorPanel"><div class="editor-empty">Select a file from the left to view or edit it.</div></div>
         <div class="file-editor-panel" id="uploadPanel" style="display:none;">
           <div class="file-editor-header">
             <div class="file-editor-path">Upload a file</div>
@@ -682,7 +647,6 @@
             </div>
             <div class="upload-preview-content" id="uploadPreviewContent"></div>
           </div>
-        </div>
         </div>
       </div>
     </div>
@@ -798,7 +762,7 @@
   function renderEmailPanel(){const c=currentContact;if(!c)return;const tabs=['Email 1','Email 2','Email 3'].map((l,i)=>`<button class="email-tab ${i===currentEmailIdx?'active':''}" onclick="selectEmailTab(${i})">${l}</button>`).join('');const body=c.emails[currentEmailIdx]||'<span style="color:var(--muted)">No email for this slot.</span>';document.getElementById('emailPanel').innerHTML=`<div class="email-panel-header"><div class="email-contact-name">${c.firstname} ${c.lastname}</div><div class="email-contact-meta">${c.jobtitle?c.jobtitle+' &middot; ':''}${c.company} &middot; ${c.email}</div></div><div class="email-tabs">${tabs}</div><div class="email-body">${body}</div>`;}
   function selectEmailTab(i){currentEmailIdx=i;renderEmailPanel();}
   async function submitAuth(){const pw=document.getElementById('authPassword').value;const err=document.getElementById('authError');err.style.display='none';try{const r=await fetch('/api/auth',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});const d=await r.json();if(d.ok){window._editorToken=d.token;document.getElementById('authOverlay').classList.remove('open');document.getElementById('authPassword').value='';loadFileTree();}else err.style.display='block';}catch{err.textContent='Connection error.';err.style.display='block';}}
-  async function loadFileTree(){const t=document.getElementById('fileTree');try{const r=await fetch('/api/context/files',{headers:{'x-editor-token':window._editorToken}});if(r.status===401){window._editorToken=null;return;}const f=await r.json();let h='';for(const[k,l] of Object.entries({global:'Global',agents:'Agents',learnings:'Learnings'})){const items=f[k]||[];h+=`<div class="file-tree-section"><div class="file-tree-header">${l}</div>${items.map(x=>`<div class="file-tree-item" onclick="loadFile('${x.path}')" data-path="${x.path}">${x.name}</div>`).join('')}</div>`;}h+=`<div class="file-tree-new"><button class="new-file-btn" onclick="showNewFileForm()">+ New File</button></div><div class="new-file-form" id="newFileForm"><select class="new-file-input" id="newFileSection"><option value="global">global/</option><option value="agents">agents/</option><option value="learnings">learnings/</option></select><input class="new-file-input" id="newFileName" placeholder="filename.md" onkeydown="if(event.key==='Enter')createNewFile()"/><div class="new-file-actions"><button class="new-file-create" onclick="createNewFile()">Create</button><button class="new-file-cancel" onclick="hideNewFileForm()">Cancel</button></div></div><div class="file-tree-new"><button class="new-file-btn" onclick="showUploadPanel()">&#8679; Upload File</button></div><div class="file-tree-new"><button class="new-file-btn" onclick="showLinkPanel()">&#128279; Link Article</button></div>`;t.innerHTML=h;}catch{t.innerHTML='<div class="editor-empty">Could not load files.</div>';}}
+  async function loadFileTree(){const t=document.getElementById('fileTree');try{const r=await fetch('/api/context/files',{headers:{'x-editor-token':window._editorToken}});if(r.status===401){window._editorToken=null;return;}const f=await r.json();let h='';for(const[k,l] of Object.entries({global:'Global',agents:'Agents',learnings:'Learnings'})){const items=f[k]||[];h+=`<div class="file-tree-section"><div class="file-tree-header">${l}</div>${items.map(x=>`<div class="file-tree-item" onclick="loadFile('${x.path}')" data-path="${x.path}">${x.name}</div>`).join('')}</div>`;}h+=`<div class="file-tree-new"><button class="new-file-btn" onclick="showNewFileForm()">+ New File</button></div><div class="new-file-form" id="newFileForm"><select class="new-file-input" id="newFileSection"><option value="global">global/</option><option value="agents">agents/</option><option value="learnings">learnings/</option></select><input class="new-file-input" id="newFileName" placeholder="filename.md" onkeydown="if(event.key==='Enter')createNewFile()"/><div class="new-file-actions"><button class="new-file-create" onclick="createNewFile()">Create</button><button class="new-file-cancel" onclick="hideNewFileForm()">Cancel</button></div></div><div class="file-tree-new"><button class="new-file-btn" onclick="showUploadPanel()">&#8679; Upload File</button></div>`;t.innerHTML=h;}catch{t.innerHTML='<div class="editor-empty">Could not load files.</div>';}}
   async function loadFile(p){document.querySelectorAll('.file-tree-item').forEach(e=>e.classList.toggle('active',e.dataset.path===p));const panel=document.getElementById('editorPanel');panel.innerHTML='<div class="editor-empty">Loading...</div>';try{const r=await fetch('/api/context/file?path='+encodeURIComponent(p),{headers:{'x-editor-token':window._editorToken}});const d=await r.json();renderViewer(p,d.content);}catch{panel.innerHTML='<div class="editor-empty">Could not load file.</div>';}}
   function renderViewer(p,c){const panel=document.getElementById('editorPanel');panel.innerHTML=`<div class="file-editor-header"><div class="file-editor-path">${p}</div><div class="editor-actions"><button class="edit-btn" onclick="startEditing('${p}')">Edit</button></div></div><div class="file-content-view">${escapeHtml(c)}</div>`;panel._content=c;}
   function startEditing(p){const panel=document.getElementById('editorPanel');const c=panel._content||'';panel.innerHTML=`<div class="file-editor-header"><div class="file-editor-path">${p} <span style="color:var(--orange);margin-left:.5rem;font-size:.65rem;">editing</span></div><div class="editor-actions"><button class="edit-btn cancel" onclick="loadFile('${p}')">Cancel</button><button class="edit-btn save" onclick="saveFile('${p}')">Save</button></div></div><textarea class="file-content-edit" id="fileEditArea">${escapeHtml(c)}</textarea>`;document.getElementById('fileEditArea').focus();}
@@ -806,9 +770,8 @@
   function showNewFileForm(){document.getElementById('newFileForm').classList.add('open');setTimeout(()=>document.getElementById('newFileName').focus(),100);}
   function hideNewFileForm(){document.getElementById('newFileForm').classList.remove('open');document.getElementById('newFileName').value='';}
   async function createNewFile(){const sec=document.getElementById('newFileSection').value;let n=document.getElementById('newFileName').value.trim();if(!n)return;if(!n.endsWith('.md'))n+='.md';const p=sec+'/'+n;try{const r=await fetch('/api/context/file',{method:'POST',headers:{'Content-Type':'application/json','x-editor-token':window._editorToken},body:JSON.stringify({path:p,content:'# '+n.replace('.md','')+'\n\n'})});if(r.ok){showToast('Created '+p,'success');hideNewFileForm();await loadFileTree();loadFile(p);}else showToast('Could not create file.','error');}catch{showToast('Could not create file.','error');}}
-  function setActivePanel(id){['editorPanel','uploadPanel','linkPanel'].forEach(p=>{const el=document.getElementById(p);if(el){el.classList.toggle('active-panel',p===id);}});}
-  function showUploadPanel(){setActivePanel('uploadPanel');resetUpload();}
-  function hideUploadPanel(){setActivePanel('editorPanel');}
+  function showUploadPanel(){document.getElementById('editorPanel').style.display='none';document.getElementById('uploadPanel').style.display='flex';resetUpload();}
+  function hideUploadPanel(){document.getElementById('uploadPanel').style.display='none';document.getElementById('editorPanel').style.display='flex';}
   function resetUpload(){document.getElementById('uploadDropZone').style.display='block';document.getElementById('uploadProcessing').style.display='none';document.getElementById('uploadPreview').classList.remove('open');document.getElementById('fileInput').value='';}
   function handleDragOver(e){e.preventDefault();document.getElementById('dropZone').classList.add('dragover');}
   function handleDragLeave(){document.getElementById('dropZone').classList.remove('dragover');}
@@ -880,85 +843,6 @@
   function loadAll(){loadStatus();loadLearnings();loadContextHealth();}
   renderReviewQueue();loadAll();
   setInterval(loadStatus,60000);setInterval(loadLearnings,30000);setInterval(loadContextHealth,300000);
-
-  function showLinkPanel(){setActivePanel('linkPanel');resetLinkPanel();setTimeout(()=>document.getElementById('linkUrl').focus(),100);}
-  function hideLinkPanel(){setActivePanel('editorPanel');}
-  function resetLinkPanel(){
-    document.getElementById('linkFetchZone').style.display='block';
-    document.getElementById('linkProcessing').style.display='none';
-    document.getElementById('linkPreview').classList.remove('open');
-    document.getElementById('linkUrl').value='';
-    document.getElementById('linkFileName').value='';
-    document.getElementById('linkPreviewContent').textContent='';
-    document.getElementById('linkSourceTag').textContent='';
-    document.getElementById('linkFetchBtn').disabled=false;
-    window._fetchedArticleContent='';
-  }
-  async function fetchArticle(){
-    const url=document.getElementById('linkUrl').value.trim();
-    if(!url||!url.startsWith('http')){showToast('Enter a valid URL.','error');return;}
-    document.getElementById('linkFetchBtn').disabled=true;
-    document.getElementById('linkFetchZone').style.display='none';
-    document.getElementById('linkProcessing').style.display='block';
-    try{
-      // Try server-side fetch endpoint first (avoids CORS)
-      let content='',title='';
-      try{
-        const r=await fetch('/api/context/fetch-url',{method:'POST',headers:{'Content-Type':'application/json','x-editor-token':window._editorToken},body:JSON.stringify({url})});
-        if(r.ok){const d=await r.json();content=d.content;title=d.title||'';}
-        else throw new Error('server fetch failed');
-      }catch{
-        // Fallback: direct fetch (works if no CORS issue)
-        const r=await fetch(url);if(!r.ok)throw new Error('Could not fetch URL');
-        const html=await r.text();
-        const doc=new DOMParser().parseFromString(html,'text/html');
-        // Remove scripts, styles, nav, footer
-        ['script','style','nav','footer','header','aside'].forEach(tag=>{doc.querySelectorAll(tag).forEach(el=>el.remove());});
-        const main=doc.querySelector('main')||doc.querySelector('article')||doc.querySelector('[role="main"]')||doc.body;
-        content=main.innerText||main.textContent||'';
-        title=doc.title||'';
-      }
-      content=content.trim().replace(/
-{3,}/g,'
-
-');
-      if(!content){showToast('Could not extract article content.','error');resetLinkPanel();return;}
-      const domain=new URL(url).hostname.replace('www.','');
-      const slug=domain.split('.')[0];
-      const safeName=(title||slug).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,40)||'article';
-      const mdContent=`# ${title||'Article'}
-
-> Source: ${url}
-
-${content}`;
-      window._fetchedArticleContent=mdContent;
-      document.getElementById('linkProcessing').style.display='none';
-      document.getElementById('linkFileName').value=safeName+'.md';
-      document.getElementById('linkSourceTag').textContent='Source: '+url;
-      document.getElementById('linkPreviewContent').textContent=mdContent.slice(0,3000)+(mdContent.length>3000?'
-
-[...truncated for preview]':'');
-      document.getElementById('linkPreview').classList.add('open');
-    }catch(err){
-      showToast('Could not fetch article. Try uploading as a file instead.','error');
-      document.getElementById('linkProcessing').style.display='none';
-      document.getElementById('linkFetchZone').style.display='block';
-      document.getElementById('linkFetchBtn').disabled=false;
-    }
-  }
-  async function saveFetchedArticle(){
-    const sec=document.getElementById('linkSection').value;
-    let n=document.getElementById('linkFileName').value.trim();
-    if(!n){showToast('Enter a filename.','error');return;}
-    if(!n.endsWith('.md'))n+='.md';
-    const p=sec+'/'+n;
-    try{
-      const r=await fetch('/api/context/file',{method:'POST',headers:{'Content-Type':'application/json','x-editor-token':window._editorToken},body:JSON.stringify({path:p,content:window._fetchedArticleContent})});
-      if(r.ok){showToast('Saved to '+p,'success');hideLinkPanel();await loadFileTree();loadFile(p);}
-      else showToast('Save failed.','error');
-    }catch{showToast('Save failed.','error');}
-  }
-
 </script>
 </body>
 </html>
