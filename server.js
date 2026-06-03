@@ -398,7 +398,7 @@ async function assembleBrainContext() {
 
   // 3. HubSpot email metrics — all outbound emails with any send activity
   try {
-    // Fetch all marketing emails, no state filter — get everything that has been sent
+    // Fetch all marketing emails ordered by most recent — get everything that has been sent
     const allEmails = [];
     let after = null;
     do {
@@ -410,6 +410,9 @@ async function assembleBrainContext() {
       const data = await r.json();
       allEmails.push(...(data.results || []));
       after = data.paging?.next?.after || null;
+      // Stop paginating once we hit emails older than 2 years
+      const oldest = allEmails[allEmails.length - 1];
+      if (oldest?.updatedAt && new Date(oldest.updatedAt) < new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000)) break;
     } while (after && allEmails.length < 200);
 
     // For each email, get stats directly from the email object's counters
@@ -458,7 +461,9 @@ async function assembleBrainContext() {
       if (!sent) return null;
       const denom = delivered || sent;
       const name = email.name || email.subject || `Email ${email.id}`;
-      return `${name}: ${sent} sent, ${denom > 0 ? ((opened/denom)*100).toFixed(1) : 0}% open rate, ${denom > 0 ? ((clicked/denom)*100).toFixed(1) : 0}% CTR`;
+      const sentDate = email.publishDate || email.updatedAt || email.createdAt || "";
+      const dateStr = sentDate ? ` (${new Date(sentDate).toLocaleDateString("en-US", { month: "short", year: "numeric" })})` : "";
+      return `${name}${dateStr}: ${sent} sent, ${denom > 0 ? ((opened/denom)*100).toFixed(1) : 0}% open, ${denom > 0 ? ((clicked/denom)*100).toFixed(1) : 0}% CTR`;
     }));
 
     const rows = metricsRows.filter(Boolean);
