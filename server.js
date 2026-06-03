@@ -11,8 +11,10 @@ app.use(express.static(path.join(__dirname, "public")));
 const PORT = process.env.PORT || 3000;
 const ANTHROPIC_API_KEY      = process.env.ANTHROPIC_API_KEY;
 const HUBSPOT_API_KEY        = process.env.HUBSPOT_API_KEY;
-const GA_PROPERTY_ID         = process.env.GA_PROPERTY_ID;          // e.g. "properties/123456789"
-const GA_SERVICE_ACCOUNT_KEY = process.env.GA_SERVICE_ACCOUNT_KEY;  // full JSON string of service account key
+const GA_PROPERTY_ID    = process.env.GA_PROPERTY_ID;    // e.g. "properties/123456789"
+const GA_CLIENT_ID      = process.env.GA_CLIENT_ID;
+const GA_CLIENT_SECRET  = process.env.GA_CLIENT_SECRET;
+const GA_REFRESH_TOKEN  = process.env.GA_REFRESH_TOKEN;
 const CONTEXT_SERVICE_URL    = process.env.CONTEXT_SERVICE_URL    || "https://operative-production-ed21.up.railway.app";
 const AOS_AGENT_URL          = process.env.AOS_AGENT_URL           || "https://aos-nurture-agent-production.up.railway.app";
 const STAQ_AGENT_URL         = process.env.STAQ_AGENT_URL          || "https://staq-prospecting-agent-production.up.railway.app";
@@ -272,27 +274,35 @@ app.get("/api/email-metrics", async (req, res) => {
 });
 
 // ── Google Analytics helper ────────────────────────────────────────────────────
-// Uses GA4 Data API with a service account key stored as JSON string in env var.
-// Returns null if GA is not configured.
+// Uses OAuth2 refresh token. Returns null if GA is not configured.
+let _gaAccessToken = null;
+let _gaTokenExpiry = 0;
+
+async function getGAAccessToken() {
+  if (_gaAccessToken && Date.now() < _gaTokenExpiry) return _gaAccessToken;
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      client_id: GA_CLIENT_ID,
+      client_secret: GA_CLIENT_SECRET,
+      refresh_token: GA_REFRESH_TOKEN,
+      grant_type: "refresh_token",
+    }).toString(),
+  });
+  const data = await res.json();
+  if (!data.access_token) throw new Error("Failed to get GA access token: " + JSON.stringify(data));
+  _gaAccessToken = data.access_token;
+  _gaTokenExpiry = Date.now() + (data.expires_in - 60) * 1000;
+  return _gaAccessToken;
+}
+
 async function fetchGAMetrics() {
-  if (!GA_PROPERTY_ID || !GA_SERVICE_ACCOUNT_KEY) return null;
+  if (!GA_PROPERTY_ID || !GA_CLIENT_ID || !GA_CLIENT_SECRET || !GA_REFRESH_TOKEN) return null;
   try {
-    // Parse service account key
-    const sa = JSON.parse(GA_SERVICE_ACCOUNT_KEY);
+    const token = await getGAAccessToken();
 
-    // Get OAuth2 access token via JWT
-    const jwt = await makeServiceAccountJWT(sa);
-    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
-    });
-    const tokenData = await tokenRes.json();
-    if (!tokenData.access_token) return null;
-    const token = tokenData.access_token;
-
-    // Run two GA4 reports in parallel: sessions/conversions overview + top pages
-    const [overviewRes, pagesRes] = await Promise.all([
+    const [overviewRes, pagesRes, sourceRes] = await Promise.all([
       fetch(`https://analyticsdata.googleapis.com/v1beta/${GA_PROPERTY_ID}:runReport`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
@@ -319,52 +329,50 @@ async function fetchGAMetrics() {
           limit: 10,
         }),
       }),
+      fetch(`https://analyticsdata.googleapis.com/v1beta/${GA_PROPERTY_ID}:runReport`, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dateRanges: [{ startDate: "30daysAgo", endDate: "today" }],
+          dimensions: [{ name: "sessionDefaultChannelGroup" }],
+          metrics: [{ name: "sessions" }, { name: "conversions" }],
+          orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+          limit: 8,
+        }),
+      }),
     ]);
 
     const overviewData = await overviewRes.json();
     const pagesData = await pagesRes.json();
+    const sourceData = await sourceRes.json();
 
     const row = overviewData.rows?.[0]?.metricValues || [];
     const overview = {
-      sessions: row[0]?.value || "0",
-      users: row[1]?.value || "0",
-      pageviews: row[2]?.value || "0",
-      conversions: row[3]?.value || "0",
+      sessions: parseInt(row[0]?.value || "0").toLocaleString(),
+      users: parseInt(row[1]?.value || "0").toLocaleString(),
+      pageviews: parseInt(row[2]?.value || "0").toLocaleString(),
+      conversions: parseInt(row[3]?.value || "0").toLocaleString(),
       bounceRate: row[4]?.value ? (parseFloat(row[4].value) * 100).toFixed(1) + "%" : "n/a",
       avgSessionDuration: row[5]?.value ? Math.round(parseFloat(row[5].value)) + "s" : "n/a",
     };
 
-    const topPages = (pagesData.rows || []).slice(0, 10).map(r => ({
+    const topPages = (pagesData.rows || []).map(r => ({
       page: r.dimensionValues[0]?.value,
-      views: r.metricValues[0]?.value,
-      sessions: r.metricValues[1]?.value,
+      views: parseInt(r.metricValues[0]?.value || "0").toLocaleString(),
+      sessions: parseInt(r.metricValues[1]?.value || "0").toLocaleString(),
     }));
 
-    return { overview, topPages, period: "last 30 days" };
+    const channels = (sourceData.rows || []).map(r => ({
+      channel: r.dimensionValues[0]?.value,
+      sessions: parseInt(r.metricValues[0]?.value || "0").toLocaleString(),
+      conversions: parseInt(r.metricValues[1]?.value || "0").toLocaleString(),
+    }));
+
+    return { overview, topPages, channels, period: "last 30 days" };
   } catch (err) {
     console.error("[GA] error:", err.message);
     return null;
   }
-}
-
-// Minimal JWT implementation for service account auth
-async function makeServiceAccountJWT(sa) {
-  const crypto = require("crypto");
-  const now = Math.floor(Date.now() / 1000);
-  const header = Buffer.from(JSON.stringify({ alg: "RS256", typ: "JWT" })).toString("base64url");
-  const payload = Buffer.from(JSON.stringify({
-    iss: sa.client_email,
-    scope: "https://www.googleapis.com/auth/analytics.readonly",
-    aud: "https://oauth2.googleapis.com/token",
-    exp: now + 3600,
-    iat: now,
-  })).toString("base64url");
-  const sigInput = `${header}.${payload}`;
-  const privateKey = sa.private_key;
-  const sign = crypto.createSign("RSA-SHA256");
-  sign.update(sigInput);
-  const sig = sign.sign(privateKey, "base64url");
-  return `${sigInput}.${sig}`;
 }
 
 // ── Context assembly for Marketing Brain ──────────────────────────────────────
@@ -491,13 +499,15 @@ async function assembleBrainContext() {
   try {
     const ga = await fetchGAMetrics();
     if (ga) {
-      const { overview, topPages } = ga;
-      const topPagesStr = topPages.map(p => `  ${p.page} — ${p.views} views`).join("\n");
+      const { overview, topPages, channels } = ga;
+      const topPagesStr = topPages.map(p => `  ${p.page} — ${p.views} views, ${p.sessions} sessions`).join("\n");
+      const channelsStr = channels ? channels.map(c => `  ${c.channel}: ${c.sessions} sessions, ${c.conversions} conversions`).join("\n") : "";
       parts.push(
         `## Website Analytics (Last 30 Days)\n` +
         `Sessions: ${overview.sessions} | Users: ${overview.users} | Pageviews: ${overview.pageviews}\n` +
         `Conversions: ${overview.conversions} | Bounce rate: ${overview.bounceRate} | Avg session: ${overview.avgSessionDuration}\n` +
-        `\nTop Pages:\n${topPagesStr}`
+        `\nTop Pages:\n${topPagesStr}` +
+        (channelsStr ? `\n\nTraffic by Channel:\n${channelsStr}` : "")
       );
     }
   } catch (err) { console.error("[brain context] ga:", err.message); }
