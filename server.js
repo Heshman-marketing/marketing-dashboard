@@ -15,6 +15,9 @@ const GA_PROPERTY_ID    = process.env.GA_PROPERTY_ID;    // e.g. "properties/123
 const GA_CLIENT_ID      = process.env.GA_CLIENT_ID;
 const GA_CLIENT_SECRET  = process.env.GA_CLIENT_SECRET;
 const GA_REFRESH_TOKEN  = process.env.GA_REFRESH_TOKEN;
+const WP_URL            = process.env.WP_URL || "https://www.operative.com";
+const WP_USERNAME       = process.env.WP_USERNAME;
+const WP_APP_PASSWORD   = process.env.WP_APP_PASSWORD;
 const CONTEXT_SERVICE_URL    = process.env.CONTEXT_SERVICE_URL    || "https://operative-production-ed21.up.railway.app";
 const AOS_AGENT_URL          = process.env.AOS_AGENT_URL           || "https://aos-nurture-agent-production.up.railway.app";
 const STAQ_AGENT_URL         = process.env.STAQ_AGENT_URL          || "https://staq-prospecting-agent-production.up.railway.app";
@@ -891,6 +894,218 @@ app.get("/api/email-metrics/recent", async (req, res) => {
     const results = withStats.filter(Boolean).slice(0, limit);
     res.json(results);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Blog Agent ────────────────────────────────────────────────────────────────
+
+// POST /api/blog/generate
+// Body: { topic, type, keyword, angle, notes }
+app.post("/api/blog/generate", async (req, res) => {
+  const { topic, type = "thought-leadership", keyword = "", angle = "", notes = "" } = req.body || {};
+  if (!topic) return res.status(400).json({ error: "topic required" });
+
+  try {
+    // Assemble context
+    const contextParts = [];
+    try {
+      const [globalRes, aosRes, staqRes] = await Promise.all([
+        fetch(`${CONTEXT_SERVICE_URL}/file?path=global/operative-products.md`),
+        fetch(`${CONTEXT_SERVICE_URL}/file?path=agents/aos-nurture.md`),
+        fetch(`${CONTEXT_SERVICE_URL}/file?path=agents/staq-prospecting.md`),
+      ]);
+      for (const r of [globalRes, aosRes, staqRes]) {
+        if (r.ok) { const d = await r.json(); if (d.content) contextParts.push(d.content); }
+      }
+    } catch {}
+
+    // Recent competitive learnings for context
+    try {
+      const r = await fetch(`${CONTEXT_SERVICE_URL}/learnings-list`);
+      if (r.ok) {
+        const entries = await r.json();
+        const recent = entries.slice(0, 5).map(e => `${e.date} — ${e.agent}: ${e.note.slice(0, 200)}`).join("\n");
+        if (recent) contextParts.push(`Recent intelligence:\n${recent}`);
+      }
+    } catch {}
+
+    const contextBlock = contextParts.join("\n\n---\n\n");
+
+    const typeDescriptions = {
+      "thought-leadership": "a thought leadership post that positions Operative as an authority on ad tech, media monetization, and the Audience Economy. Lead with a strong POV, use data and examples, write in a direct and confident voice.",
+      "product-announcement": "a product or feature announcement post. Lead with the problem it solves, explain what's new and why it matters, include a clear call to action.",
+      "seo": `an SEO-driven post targeting the keyword "${keyword}". Structure it for search intent with a clear H1 containing the keyword, supporting H2s, and a meta description under 160 characters.`,
+      "campaign": "a campaign-aligned post that supports the current go-to-market motion. Tie it to a specific audience pain point and include a clear call to action.",
+    };
+
+    const typeDesc = typeDescriptions[type] || typeDescriptions["thought-leadership"];
+
+    const prompt = `You are a senior content strategist writing for Operative, a B2B ad tech company.
+
+Operative sells:
+- AOS (Ad Operating System) — the OMS for digital media, premium publishers, and streaming platforms
+- STAQ — analytics and data unification for media companies
+- Adeline AI — agentic AI layer for automated deal decisioning
+- OnAir — linear ad management for broadcast TV
+
+Target audience: VPs and Directors of Revenue, Ad Ops, and Technology at premium publishers, broadcasters, streaming platforms, and sports media companies.
+
+Brand voice: Direct, confident, specific. No filler. No em-dashes. No corporate-speak. Write like a smart practitioner, not a marketer.
+
+${contextBlock ? `CONTEXT FROM KNOWLEDGE BASE:\n${contextBlock.slice(0, 4000)}\n\n` : ""}
+
+Write ${typeDesc}
+
+Topic: ${topic}
+${angle ? `Angle / POV: ${angle}` : ""}
+${keyword ? `Target keyword: ${keyword}` : ""}
+${notes ? `Additional notes: ${notes}` : ""}
+
+Return a JSON object with exactly these fields:
+{
+  "title": "The post title (compelling, specific, under 70 chars)",
+  "metaDescription": "SEO meta description under 160 chars",
+  "slug": "url-friendly-slug-from-title",
+  "tags": ["tag1", "tag2", "tag3"],
+  "categories": ["suggested category name"],
+  "estimatedReadTime": "X min read",
+  "body": "The full post body in HTML. Use <h2> and <h3> for sections, <p> for paragraphs, <ul>/<li> for lists, <strong> for emphasis. No <html>, <head>, or <body> tags. No inline styles. At least 600 words."
+}
+
+Return ONLY valid JSON. No preamble, no markdown code fences.`;
+
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": ANTHROPIC_API_KEY,
+        "anthropic-version": "2023-06-01",
+        "anthropic-beta": "web-search-2025-03-05",
+      },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 4000,
+        tools: [{ type: "web_search_20250305", name: "web_search" }],
+        messages: [{ role: "user", content: prompt }],
+      }),
+    });
+
+    const data = await r.json();
+    if (data.error) return res.status(500).json({ error: data.error.message });
+
+    // Extract text content (may have gone through tool use)
+    let text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n\n");
+
+    // If tool use occurred, continue conversation
+    if (data.stop_reason === "tool_use") {
+      const toolUseBlocks = (data.content || []).filter(b => b.type === "tool_use");
+      const toolResults = toolUseBlocks.map(b => ({ type: "tool_result", tool_use_id: b.id, content: "Search completed" }));
+      const r2 = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "anthropic-beta": "web-search-2025-03-05" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514", max_tokens: 4000,
+          tools: [{ type: "web_search_20250305", name: "web_search" }],
+          messages: [{ role: "user", content: prompt }, { role: "assistant", content: data.content }, { role: "user", content: toolResults }],
+        }),
+      });
+      const data2 = await r2.json();
+      text = (data2.content || []).filter(b => b.type === "text").map(b => b.text).join("\n\n");
+    }
+
+    // Parse JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(500).json({ error: "Could not parse post from AI response", raw: text.slice(0, 500) });
+    const post = JSON.parse(jsonMatch[0]);
+    res.json(post);
+  } catch (err) {
+    console.error("[blog/generate]", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/blog/publish
+// Body: { title, body, slug, metaDescription, tags, categories, status }
+// status: 'draft' (default) or 'publish'
+app.post("/api/blog/publish", async (req, res) => {
+  const { title, body, slug, metaDescription, tags = [], categories = [], status = "draft" } = req.body || {};
+  if (!title || !body) return res.status(400).json({ error: "title and body required" });
+  if (!WP_USERNAME || !WP_APP_PASSWORD) return res.status(503).json({ error: "WordPress credentials not configured. Add WP_USERNAME and WP_APP_PASSWORD to Railway env vars." });
+
+  try {
+    const credentials = Buffer.from(`${WP_USERNAME}:${WP_APP_PASSWORD}`).toString("base64");
+    const wpBase = `${WP_URL}/wp-json/wp/v2`;
+
+    // Resolve or create tags
+    const tagIds = await Promise.all(tags.map(async (tagName) => {
+      try {
+        // Search for existing tag
+        const searchRes = await fetch(`${wpBase}/tags?search=${encodeURIComponent(tagName)}`, {
+          headers: { "Authorization": `Basic ${credentials}` },
+        });
+        const existing = await searchRes.json();
+        if (existing.length > 0) return existing[0].id;
+        // Create new tag
+        const createRes = await fetch(`${wpBase}/tags`, {
+          method: "POST",
+          headers: { "Authorization": `Basic ${credentials}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ name: tagName }),
+        });
+        const created = await createRes.json();
+        return created.id;
+      } catch { return null; }
+    }));
+
+    // Resolve or create categories
+    const categoryIds = await Promise.all(categories.map(async (catName) => {
+      try {
+        const searchRes = await fetch(`${wpBase}/categories?search=${encodeURIComponent(catName)}`, {
+          headers: { "Authorization": `Basic ${credentials}` },
+        });
+        const existing = await searchRes.json();
+        if (existing.length > 0) return existing[0].id;
+        const createRes = await fetch(`${wpBase}/categories`, {
+          method: "POST",
+          headers: { "Authorization": `Basic ${credentials}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ name: catName }),
+        });
+        const created = await createRes.json();
+        return created.id;
+      } catch { return null; }
+    }));
+
+    // Create the post
+    const postBody = {
+      title,
+      content: body,
+      status,
+      slug: slug || title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+      excerpt: metaDescription || "",
+      tags: tagIds.filter(Boolean),
+      categories: categoryIds.filter(Boolean),
+      meta: { _yoast_wpseo_metadesc: metaDescription || "" },
+    };
+
+    const postRes = await fetch(`${wpBase}/posts`, {
+      method: "POST",
+      headers: { "Authorization": `Basic ${credentials}`, "Content-Type": "application/json" },
+      body: JSON.stringify(postBody),
+    });
+
+    const postData = await postRes.json();
+    if (!postRes.ok) return res.status(500).json({ error: postData.message || "WordPress API error", detail: postData });
+
+    res.json({
+      ok: true,
+      id: postData.id,
+      status: postData.status,
+      editUrl: `${WP_URL}/wp-admin/post.php?post=${postData.id}&action=edit`,
+      previewUrl: postData.link,
+      title: postData.title?.rendered,
+    });
+  } catch (err) {
+    console.error("[blog/publish]", err.message);
     res.status(500).json({ error: err.message });
   }
 });
