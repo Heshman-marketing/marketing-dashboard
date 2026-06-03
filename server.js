@@ -651,6 +651,164 @@ ${liveContext ? liveContext : "Context layer is loading. Answer from your traini
   }
 });
 
+// ── GA Analytics Agent endpoint ───────────────────────────────────────────────
+// POST /api/ga-report
+// Body: { startDate, endDate, metrics?, dimensions? }
+// startDate/endDate: "YYYY-MM-DD" or GA4 relative dates like "30daysAgo", "today"
+app.post("/api/ga-report", async (req, res) => {
+  const {
+    startDate = "30daysAgo",
+    endDate = "today",
+    pageFilter = null,       // optional: filter to a specific page path prefix
+    channelFilter = null,    // optional: filter to a specific channel
+  } = req.body || {};
+
+  if (!GA_PROPERTY_ID || !GA_CLIENT_ID || !GA_CLIENT_SECRET || !GA_REFRESH_TOKEN) {
+    return res.status(503).json({ error: "GA not configured" });
+  }
+
+  try {
+    const token = await getGAAccessToken();
+    const dateRange = [{ startDate, endDate }];
+
+    // Build optional dimension filters
+    const makeFilter = (field, value) => ({
+      filter: { fieldName: field, stringFilter: { matchType: "BEGINS_WITH", value } }
+    });
+
+    // 1. Overview metrics
+    const overviewBody = {
+      dateRanges: dateRange,
+      metrics: [
+        { name: "sessions" },
+        { name: "totalUsers" },
+        { name: "newUsers" },
+        { name: "screenPageViews" },
+        { name: "conversions" },
+        { name: "bounceRate" },
+        { name: "averageSessionDuration" },
+        { name: "engagementRate" },
+      ],
+    };
+    if (channelFilter) overviewBody.dimensionFilter = makeFilter("sessionDefaultChannelGroup", channelFilter);
+
+    // 2. Top pages
+    const pagesBody = {
+      dateRanges: dateRange,
+      dimensions: [{ name: "pagePath" }, { name: "pageTitle" }],
+      metrics: [{ name: "screenPageViews" }, { name: "sessions" }, { name: "averageSessionDuration" }, { name: "bounceRate" }],
+      orderBys: [{ metric: { metricName: "screenPageViews" }, desc: true }],
+      limit: 20,
+    };
+    if (pageFilter) pagesBody.dimensionFilter = makeFilter("pagePath", pageFilter);
+
+    // 3. Traffic channels
+    const channelsBody = {
+      dateRanges: dateRange,
+      dimensions: [{ name: "sessionDefaultChannelGroup" }],
+      metrics: [{ name: "sessions" }, { name: "totalUsers" }, { name: "conversions" }, { name: "bounceRate" }],
+      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+    };
+
+    // 4. Daily trend (sessions over time)
+    const trendBody = {
+      dateRanges: dateRange,
+      dimensions: [{ name: "date" }],
+      metrics: [{ name: "sessions" }, { name: "screenPageViews" }],
+      orderBys: [{ dimension: { dimensionName: "date" } }],
+    };
+
+    // 5. Devices
+    const devicesBody = {
+      dateRanges: dateRange,
+      dimensions: [{ name: "deviceCategory" }],
+      metrics: [{ name: "sessions" }, { name: "totalUsers" }],
+      orderBys: [{ metric: { metricName: "sessions" }, desc: true }],
+    };
+
+    const gaPost = (body) => fetch(`https://analyticsdata.googleapis.com/v1beta/${GA_PROPERTY_ID}:runReport`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    }).then(r => r.json());
+
+    const [overviewData, pagesData, channelsData, trendData, devicesData] = await Promise.all([
+      gaPost(overviewBody),
+      gaPost(pagesBody),
+      gaPost(channelsBody),
+      gaPost(trendBody),
+      gaPost(devicesBody),
+    ]);
+
+    // Parse overview
+    const ov = overviewData.rows?.[0]?.metricValues || [];
+    const fmt = (v, decimals = 0) => parseFloat(v || "0").toLocaleString("en-US", { maximumFractionDigits: decimals });
+    const pct = (v) => (parseFloat(v || "0") * 100).toFixed(1) + "%";
+    const dur = (v) => {
+      const s = Math.round(parseFloat(v || "0"));
+      const m = Math.floor(s / 60); const sec = s % 60;
+      return m > 0 ? `${m}m ${sec}s` : `${sec}s`;
+    };
+
+    const overview = {
+      sessions: fmt(ov[0]?.value),
+      users: fmt(ov[1]?.value),
+      newUsers: fmt(ov[2]?.value),
+      pageviews: fmt(ov[3]?.value),
+      conversions: fmt(ov[4]?.value),
+      bounceRate: pct(ov[5]?.value),
+      avgDuration: dur(ov[6]?.value),
+      engagementRate: pct(ov[7]?.value),
+    };
+
+    // Parse pages
+    const pages = (pagesData.rows || []).map(r => ({
+      path: r.dimensionValues[0]?.value,
+      title: r.dimensionValues[1]?.value,
+      views: fmt(r.metricValues[0]?.value),
+      sessions: fmt(r.metricValues[1]?.value),
+      avgDuration: dur(r.metricValues[2]?.value),
+      bounceRate: pct(r.metricValues[3]?.value),
+    }));
+
+    // Parse channels
+    const channels = (channelsData.rows || []).map(r => ({
+      channel: r.dimensionValues[0]?.value,
+      sessions: fmt(r.metricValues[0]?.value),
+      users: fmt(r.metricValues[1]?.value),
+      conversions: fmt(r.metricValues[2]?.value),
+      bounceRate: pct(r.metricValues[3]?.value),
+      sessionsPct: null, // filled below
+    }));
+    const totalSessions = (channelsData.rows || []).reduce((s, r) => s + parseInt(r.metricValues[0]?.value || 0), 0);
+    channels.forEach(c => {
+      c.sessionsPct = totalSessions > 0 ? ((parseInt(c.sessions.replace(/,/g, "")) / totalSessions) * 100).toFixed(1) + "%" : "0%";
+    });
+
+    // Parse daily trend
+    const trend = (trendData.rows || []).map(r => {
+      const d = r.dimensionValues[0]?.value || "";
+      return {
+        date: `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`,
+        sessions: parseInt(r.metricValues[0]?.value || "0"),
+        pageviews: parseInt(r.metricValues[1]?.value || "0"),
+      };
+    });
+
+    // Parse devices
+    const devices = (devicesData.rows || []).map(r => ({
+      device: r.dimensionValues[0]?.value,
+      sessions: fmt(r.metricValues[0]?.value),
+      users: fmt(r.metricValues[1]?.value),
+    }));
+
+    res.json({ overview, pages, channels, trend, devices, dateRange: { startDate, endDate } });
+  } catch (err) {
+    console.error("[ga-report]", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GA debug endpoint ─────────────────────────────────────────────────────────
 app.get("/api/ga-test", async (req, res) => {
   try {
