@@ -651,6 +651,33 @@ ${liveContext ? liveContext : "Context layer is loading. Answer from your traini
   }
 });
 
+// ── GA debug endpoint ─────────────────────────────────────────────────────────
+app.get("/api/ga-test", async (req, res) => {
+  try {
+    if (!GA_CLIENT_ID || !GA_CLIENT_SECRET || !GA_REFRESH_TOKEN || !GA_PROPERTY_ID) {
+      return res.json({ ok: false, error: "Missing env vars", vars: {
+        GA_CLIENT_ID: !!GA_CLIENT_ID,
+        GA_CLIENT_SECRET: !!GA_CLIENT_SECRET,
+        GA_REFRESH_TOKEN: !!GA_REFRESH_TOKEN,
+        GA_PROPERTY_ID: !!GA_PROPERTY_ID,
+      }});
+    }
+    const token = await getGAAccessToken();
+    const r = await fetch(`https://analyticsdata.googleapis.com/v1beta/${GA_PROPERTY_ID}:runReport`, {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        dateRanges: [{ startDate: "7daysAgo", endDate: "today" }],
+        metrics: [{ name: "sessions" }],
+      }),
+    });
+    const data = await r.json();
+    res.json({ ok: r.ok, status: r.status, data });
+  } catch (err) {
+    res.json({ ok: false, error: err.message });
+  }
+});
+
 // ── Fallback ───────────────────────────────────────────────────────────────────
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
