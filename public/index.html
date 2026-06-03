@@ -416,7 +416,8 @@
 
     <div class="view" id="view-brain">
       <div class="brain-container">
-        <div class="brain-hero">
+        <div class="brain-hero" style="position:relative">
+          <button onclick="clearHistory('brainHistory','brainMessages','Ask me anything about your pipeline, campaigns, or market.')" style="position:absolute;top:0;right:0;font-family:\'DM Mono\',monospace;font-size:.58rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);border-radius:4px;background:transparent;padding:3px 8px;cursor:pointer;transition:all .12s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Clear conversation</button>
           <div class="brain-logo">&#10022;</div>
           <div class="brain-title">Marketing Brain</div>
           <div class="brain-subtitle">Ask anything about your pipeline, campaigns, competitive landscape, or market. Powered by your context layer, HubSpot data, and live web search.</div>
@@ -443,7 +444,7 @@
     <div class="view active" id="view-dashboard">
       <div class="home-layout">
         <div class="home-brain">
-          <div class="home-brain-header"><div class="home-brain-icon">&#10022;</div><div class="home-brain-meta"><div class="home-brain-title">Marketing Brain</div><div class="home-brain-sub">Context service &middot; All agents &middot; Live</div></div></div>
+          <div class="home-brain-header"><div class="home-brain-icon">&#10022;</div><div class="home-brain-meta"><div class="home-brain-title">Marketing Brain</div><div class="home-brain-sub">Context service &middot; All agents &middot; Live</div></div><button onclick="clearHistory('homeBrainHistory','homeBrainMessages','Good morning. I\'m connected to your context service and all active agents. What do you need?')" style="font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);border-radius:4px;background:transparent;padding:2px 7px;cursor:pointer;margin-left:auto;transition:all .12s" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">Clear</button></div>
           <div class="home-brain-messages" id="homeBrainMessages">
             <div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble">Good morning. I'm connected to your context service and all active agents. What do you need?</div></div>
           </div>
@@ -742,6 +743,7 @@
 
 <script>
 function switchView(v){
+  try{localStorage.setItem('activeView',v);}catch{}
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
   const ni=document.querySelector('.nav-item[onclick="switchView(\''+v+'\')"]');
@@ -800,12 +802,49 @@ function switchReviewTab(id,idx){_rst[id]=idx;renderReviewModal(REVIEW_ITEMS.fin
 function closeReviewModal(){document.getElementById('reviewModalOverlay').classList.remove('open');}
 function approveReviewItem(id){_rd.add(id);if(_rsi===id)closeReviewModal();renderReviewQueue();showToast('Approved.','success');}
 function dismissReviewItem(id){_rd.add(id);if(_rsi===id)closeReviewModal();renderReviewQueue();}
-const homeBrainHistory=[];
+// ── Persistent conversation history ──
+const MAX_HISTORY = 40; // keep last 20 exchanges
+
+function loadHistory(key) {
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; }
+}
+function saveHistory(key, history) {
+  try { localStorage.setItem(key, JSON.stringify(history.slice(-MAX_HISTORY))); } catch {}
+}
+function clearHistory(key, msgsId, welcomeMsg) {
+  localStorage.removeItem(key);
+  const el = document.getElementById(msgsId);
+  if (el) el.innerHTML = `<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble">${welcomeMsg}</div></div>`;
+  if (key === 'homeBrainHistory') { homeBrainHistory.length = 0; document.getElementById('homeBrainChips').style.display=''; }
+  if (key === 'brainHistory') { brainHistory.length = 0; const sug=document.querySelector('.brain-suggestions'); if(sug)sug.style.display=''; }
+}
+
+const homeBrainHistory = loadHistory('homeBrainHistory');
+
+function restoreBrainMessages(history, msgsId, avatarClass, welcomeMsg) {
+  const el = document.getElementById(msgsId);
+  if (!el || !history.length) return;
+  // Hide chips since we have history
+  const chips = msgsId === 'homeBrainMessages' ? document.getElementById('homeBrainChips') : document.querySelector('.brain-suggestions');
+  if (chips) chips.style.display = 'none';
+  // Render history
+  const msgs = history.map(m => {
+    if (m.role === 'user') {
+      return `<div class="brain-message user"><div class="brain-avatar user">C</div><div class="brain-bubble">${escapeHtml(m.content)}</div></div>`;
+    } else {
+      const fmt = m.content.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+      return `<div class="brain-message"><div class="brain-avatar ${avatarClass}">&#10022;</div><div class="brain-bubble"><p>${fmt}</p></div></div>`;
+    }
+  }).join('');
+  el.innerHTML = msgs;
+  el.scrollTop = el.scrollHeight;
+}
+
 function homeAsk(q){document.getElementById('homeBrainInput').value=q;homeSubmit();}
-async function homeSubmit(){const inp=document.getElementById('homeBrainInput');const q=inp.value.trim();if(!q)return;inp.value='';const msgs=document.getElementById('homeBrainMessages');document.getElementById('homeBrainChips').style.display='none';msgs.innerHTML+=`<div class="brain-message user"><div class="brain-avatar user">C</div><div class="brain-bubble">${escapeHtml(q)}</div></div>`;const tid='ht'+Date.now();msgs.innerHTML+=`<div class="brain-message" id="${tid}"><div class="brain-avatar ai">&#10022;</div><div class="brain-thinking"><div class="brain-thinking-dots"><span></span><span></span><span></span></div><span>Thinking...</span></div></div>`;msgs.scrollTop=msgs.scrollHeight;homeBrainHistory.push({role:'user',content:q});try{const r=await fetch('/api/brain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:q}],conversationHistory:homeBrainHistory.slice(0,-1)})});if(!r.ok)throw new Error('Server error '+r.status);const d=await r.json();const reply=d.reply||'Something went wrong.';homeBrainHistory.push({role:'assistant',content:reply});document.getElementById(tid)?.remove();const fmt=reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');msgs.innerHTML+=`<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble">${d.usedSearch?'<span style="font-family:var(--font-mono,monospace);font-size:.6rem;color:var(--muted);display:block;margin-bottom:.4rem;">&#127760; searched the web</span>':''}<p>${fmt}</p></div></div>`;}catch(err){document.getElementById(tid)?.remove();msgs.innerHTML+=`<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble" style="color:var(--red)">${escapeHtml(err.message)}</div></div>`;}msgs.scrollTop=msgs.scrollHeight;}
-const brainHistory=[];
+async function homeSubmit(){const inp=document.getElementById('homeBrainInput');const q=inp.value.trim();if(!q)return;inp.value='';const msgs=document.getElementById('homeBrainMessages');document.getElementById('homeBrainChips').style.display='none';msgs.innerHTML+=`<div class="brain-message user"><div class="brain-avatar user">C</div><div class="brain-bubble">${escapeHtml(q)}</div></div>`;const tid='ht'+Date.now();msgs.innerHTML+=`<div class="brain-message" id="${tid}"><div class="brain-avatar ai">&#10022;</div><div class="brain-thinking"><div class="brain-thinking-dots"><span></span><span></span><span></span></div><span>Thinking...</span></div></div>`;msgs.scrollTop=msgs.scrollHeight;homeBrainHistory.push({role:'user',content:q});saveHistory('homeBrainHistory',homeBrainHistory);try{const r=await fetch('/api/brain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:q}],conversationHistory:homeBrainHistory.slice(0,-1)})});if(!r.ok)throw new Error('Server error '+r.status);const d=await r.json();const reply=d.reply||'Something went wrong.';homeBrainHistory.push({role:'assistant',content:reply});saveHistory('homeBrainHistory',homeBrainHistory);document.getElementById(tid)?.remove();const fmt=reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');msgs.innerHTML+=`<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble">${d.usedSearch?'<span style="font-family:var(--font-mono,monospace);font-size:.6rem;color:var(--muted);display:block;margin-bottom:.4rem;">&#127760; searched the web</span>':''}<p>${fmt}</p></div></div>`;}catch(err){document.getElementById(tid)?.remove();msgs.innerHTML+=`<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble" style="color:var(--red)">${escapeHtml(err.message)}</div></div>`;}msgs.scrollTop=msgs.scrollHeight;}
+const brainHistory = loadHistory('brainHistory');
 async function askBrain(q){document.getElementById('brainInput').value=q;sendBrainMessage();}
-async function sendBrainMessage(){const inp=document.getElementById('brainInput');const q=inp.value.trim();if(!q)return;inp.value='';inp.style.height='auto';document.getElementById('brainSend').disabled=true;const msgs=document.getElementById('brainMessages');const sug=document.querySelector('.brain-suggestions');if(sug)sug.style.display='none';msgs.innerHTML+=`<div class="brain-message user"><div class="brain-avatar user">C</div><div class="brain-bubble">${escapeHtml(q)}</div></div>`;const tid='t'+Date.now();msgs.innerHTML+=`<div class="brain-message" id="${tid}"><div class="brain-avatar ai">&#10022;</div><div class="brain-thinking"><div class="brain-thinking-dots"><span></span><span></span><span></span></div><span>Thinking...</span></div></div>`;msgs.scrollTop=msgs.scrollHeight;brainHistory.push({role:'user',content:q});try{const r=await fetch('/api/brain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:q}],conversationHistory:brainHistory.slice(0,-1)})});if(!r.ok)throw new Error('Server error '+r.status);const d=await r.json();const reply=d.reply||'Something went wrong.';brainHistory.push({role:'assistant',content:reply});document.getElementById(tid)?.remove();const fmt=reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');msgs.innerHTML+=`<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble">${d.usedSearch?'<span style="font-family:var(--font-mono,monospace);font-size:.6rem;color:var(--muted);display:block;margin-bottom:.4rem;">&#127760; searched the web</span>':''}<p>${fmt}</p></div></div>`;}catch(err){document.getElementById(tid)?.remove();msgs.innerHTML+=`<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble" style="color:var(--red)">${escapeHtml(err.message)}</div></div>`;}msgs.scrollTop=msgs.scrollHeight;document.getElementById('brainSend').disabled=false;inp.focus();}
+async function sendBrainMessage(){const inp=document.getElementById('brainInput');const q=inp.value.trim();if(!q)return;inp.value='';inp.style.height='auto';document.getElementById('brainSend').disabled=true;const msgs=document.getElementById('brainMessages');const sug=document.querySelector('.brain-suggestions');if(sug)sug.style.display='none';msgs.innerHTML+=`<div class="brain-message user"><div class="brain-avatar user">C</div><div class="brain-bubble">${escapeHtml(q)}</div></div>`;const tid='t'+Date.now();msgs.innerHTML+=`<div class="brain-message" id="${tid}"><div class="brain-avatar ai">&#10022;</div><div class="brain-thinking"><div class="brain-thinking-dots"><span></span><span></span><span></span></div><span>Thinking...</span></div></div>`;msgs.scrollTop=msgs.scrollHeight;brainHistory.push({role:'user',content:q});saveHistory('brainHistory',brainHistory);try{const r=await fetch('/api/brain',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:[{role:'user',content:q}],conversationHistory:brainHistory.slice(0,-1)})});if(!r.ok)throw new Error('Server error '+r.status);const d=await r.json();const reply=d.reply||'Something went wrong.';brainHistory.push({role:'assistant',content:reply});saveHistory('brainHistory',brainHistory);document.getElementById(tid)?.remove();const fmt=reply.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');msgs.innerHTML+=`<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble">${d.usedSearch?'<span style="font-family:var(--font-mono,monospace);font-size:.6rem;color:var(--muted);display:block;margin-bottom:.4rem;">&#127760; searched the web</span>':''}<p>${fmt}</p></div></div>`;}catch(err){document.getElementById(tid)?.remove();msgs.innerHTML+=`<div class="brain-message"><div class="brain-avatar ai">&#10022;</div><div class="brain-bubble" style="color:var(--red)">${escapeHtml(err.message)}</div></div>`;}msgs.scrollTop=msgs.scrollHeight;document.getElementById('brainSend').disabled=false;inp.focus();}
 function escapeHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 let _toastTimer;
 function showToast(m,t='info'){const el=document.getElementById('toast');el.textContent=m;el.className='toast '+t+' show';clearTimeout(_toastTimer);_toastTimer=setTimeout(()=>{el.className='toast';},3500);}
@@ -923,6 +962,11 @@ async function loadHomeHS(){
 
 renderReviewQueue();
 loadAll();
+// Restore last active view
+try{const v=localStorage.getItem('activeView');if(v&&v!=='dashboard')switchView(v);}catch{}
+// Restore brain conversation history
+restoreBrainMessages(homeBrainHistory,'homeBrainMessages','ai','Good morning. I\'m connected to your context service and all active agents. What do you need?');
+restoreBrainMessages(brainHistory,'brainMessages','ai','Ask me anything about your pipeline, campaigns, or market.');
 setInterval(loadStatus,60000);setInterval(loadLearnings,30000);setInterval(loadContextHealth,300000);
 </script>
 </body>
