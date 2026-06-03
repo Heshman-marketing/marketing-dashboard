@@ -396,46 +396,74 @@ async function assembleBrainContext() {
     }
   } catch (err) { console.error("[brain context] learnings:", err.message); }
 
-  // 3. HubSpot email metrics — all outbound emails, not just hardcoded IDs
+  // 3. HubSpot email metrics — all outbound emails with any send activity
   try {
-    // Fetch all marketing emails from HubSpot (paginated, up to 100)
+    // Fetch all marketing emails, no state filter — get everything that has been sent
     const allEmails = [];
     let after = null;
     do {
-      const url = `https://api.hubapi.com/marketing/v3/emails?limit=50${after ? `&after=${after}` : ""}&orderBy=-updatedAt`;
-      const r = await fetch(url, { headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` } });
+      const qs = `limit=50&orderBy=-updatedAt${after ? `&after=${after}` : ""}`;
+      const r = await fetch(`https://api.hubapi.com/marketing/v3/emails?${qs}`, {
+        headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
+      });
       if (!r.ok) break;
       const data = await r.json();
-      const emails = (data.results || []).filter(e =>
-        e.state === "PUBLISHED" || e.state === "PUBLISHED_OR_SCHEDULED" || e.counters?.sent > 0
-      );
-      allEmails.push(...emails);
+      allEmails.push(...(data.results || []));
       after = data.paging?.next?.after || null;
-    } while (after && allEmails.length < 100);
+    } while (after && allEmails.length < 200);
 
-    if (allEmails.length) {
-      // Pull campaign stats for each email
-      const metricsRows = await Promise.all(allEmails.map(async (email) => {
-        const campaignIds = email.allEmailCampaignIds || [];
-        if (!campaignIds.length) return null;
-        let sent = 0, delivered = 0, opened = 0, clicked = 0;
-        for (const cid of campaignIds) {
-          const sr = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${cid}`, {
+    // For each email, get stats directly from the email object's counters
+    // (avoids campaign endpoint entirely — works even without HubSpot campaigns)
+    const metricsRows = await Promise.all(allEmails.map(async (email) => {
+      // Try getting detailed stats via the email stats endpoint first
+      let sent = 0, delivered = 0, opened = 0, clicked = 0;
+
+      try {
+        const sr = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}/statistics/histogram?interval=total`, {
+          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
+        });
+        if (sr.ok) {
+          const sd = await sr.json();
+          const c = sd.counters || sd.totals || sd.results?.[0]?.counters || {};
+          sent = c.sent || c.SENT || 0;
+          delivered = c.delivered || c.DELIVERED || 0;
+          opened = c.open || c.opens || c.OPEN || c.OPENED || 0;
+          clicked = c.click || c.clicks || c.CLICK || c.CLICKED || 0;
+        }
+      } catch {}
+
+      // Fallback: use counters on the email object itself
+      if (!sent) {
+        const c = email.counters || email.statistics || {};
+        sent = c.sent || c.SENT || 0;
+        delivered = c.delivered || c.DELIVERED || 0;
+        opened = c.open || c.opens || c.OPEN || c.OPENED || 0;
+        clicked = c.click || c.clicks || c.CLICK || c.CLICKED || 0;
+      }
+
+      // Fallback: try campaign IDs if available
+      if (!sent && email.allEmailCampaignIds?.length) {
+        for (const cid of email.allEmailCampaignIds) {
+          const cr = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${cid}`, {
             headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
           });
-          if (sr.ok) {
-            const d = await sr.json(); const c = d.counters || {};
+          if (cr.ok) {
+            const cd = await cr.json(); const c = cd.counters || {};
             sent += c.sent || 0; delivered += c.delivered || 0;
             opened += c.open || c.opens || 0; clicked += c.click || c.clicks || 0;
           }
         }
-        const denom = delivered || sent;
-        if (!sent) return null;
-        const name = email.name || email.subject || `Email ${email.id}`;
-        return `${name}: ${sent} sent, ${denom > 0 ? ((opened/denom)*100).toFixed(1) : 0}% open, ${denom > 0 ? ((clicked/denom)*100).toFixed(1) : 0}% CTR`;
-      }));
-      const rows = metricsRows.filter(Boolean);
-      if (rows.length) parts.push(`## HubSpot Email Performance (All Campaigns)\n${rows.join("\n")}`);
+      }
+
+      if (!sent) return null;
+      const denom = delivered || sent;
+      const name = email.name || email.subject || `Email ${email.id}`;
+      return `${name}: ${sent} sent, ${denom > 0 ? ((opened/denom)*100).toFixed(1) : 0}% open rate, ${denom > 0 ? ((clicked/denom)*100).toFixed(1) : 0}% CTR`;
+    }));
+
+    const rows = metricsRows.filter(Boolean);
+    if (rows.length) {
+      parts.push(`## HubSpot Email Performance (${rows.length} emails)\n${rows.join("\n")}`);
     }
   } catch (err) { console.error("[brain context] hubspot:", err.message); }
 
