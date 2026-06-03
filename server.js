@@ -809,6 +809,92 @@ app.post("/api/ga-report", async (req, res) => {
   }
 });
 
+// ── Recent email metrics — last 5 sent emails ────────────────────────────────
+app.get("/api/email-metrics/recent", async (req, res) => {
+  const limit = parseInt(req.query.limit) || 5;
+  try {
+    // Fetch all emails ordered by publish date descending
+    const allEmails = [];
+    let after = null;
+    do {
+      const qs = `limit=50&orderBy=-publishDate${after ? `&after=${after}` : ""}`;
+      const r = await fetch(`https://api.hubapi.com/marketing/v3/emails?${qs}`, {
+        headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
+      });
+      if (!r.ok) break;
+      const data = await r.json();
+      allEmails.push(...(data.results || []));
+      after = data.paging?.next?.after || null;
+      // Stop once we have enough candidates or hit 6 months ago
+      const oldest = allEmails[allEmails.length - 1];
+      if (oldest?.publishDate && new Date(oldest.publishDate) < new Date(Date.now() - 180 * 24 * 60 * 60 * 1000)) break;
+    } while (after && allEmails.length < 100);
+
+    // Get stats for each and filter to ones with actual sends
+    const withStats = await Promise.all(allEmails.map(async (email) => {
+      let sent = 0, delivered = 0, opened = 0, clicked = 0;
+
+      // Try stats endpoint first
+      try {
+        const sr = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}/statistics/histogram?interval=total`, {
+          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
+        });
+        if (sr.ok) {
+          const sd = await sr.json();
+          const c = sd.counters || sd.totals || sd.results?.[0]?.counters || {};
+          sent = c.sent || c.SENT || 0;
+          delivered = c.delivered || c.DELIVERED || 0;
+          opened = c.open || c.opens || c.OPEN || c.OPENED || 0;
+          clicked = c.click || c.clicks || c.CLICK || c.CLICKED || 0;
+        }
+      } catch {}
+
+      // Fallback: counters on email object
+      if (!sent) {
+        const c = email.counters || {};
+        sent = c.sent || c.SENT || 0;
+        delivered = c.delivered || c.DELIVERED || 0;
+        opened = c.open || c.opens || 0;
+        clicked = c.click || c.clicks || 0;
+      }
+
+      // Fallback: campaign IDs
+      if (!sent && email.allEmailCampaignIds?.length) {
+        for (const cid of email.allEmailCampaignIds) {
+          const cr = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${cid}`, {
+            headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
+          });
+          if (cr.ok) {
+            const cd = await cr.json(); const c = cd.counters || {};
+            sent += c.sent || 0; delivered += c.delivered || 0;
+            opened += c.open || c.opens || 0; clicked += c.click || c.clicks || 0;
+          }
+        }
+      }
+
+      if (!sent) return null;
+      const denom = delivered || sent;
+      return {
+        id: email.id,
+        name: email.name || email.subject || `Email ${email.id}`,
+        subject: email.subject || email.name || "",
+        publishDate: email.publishDate || email.updatedAt || null,
+        sent,
+        delivered,
+        opened,
+        clicked,
+        openRate: denom > 0 ? ((opened / denom) * 100).toFixed(1) : "0.0",
+        clickRate: denom > 0 ? ((clicked / denom) * 100).toFixed(1) : "0.0",
+      };
+    }));
+
+    const results = withStats.filter(Boolean).slice(0, limit);
+    res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GA debug endpoint ─────────────────────────────────────────────────────────
 app.get("/api/ga-test", async (req, res) => {
   try {
