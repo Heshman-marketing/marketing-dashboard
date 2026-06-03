@@ -352,6 +352,49 @@
     .analytics-hs-ctr{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--muted);width:38px;text-align:right;flex-shrink:0}
     .analytics-loading{padding:2rem;text-align:center;color:var(--muted);font-size:.75rem}
     .analytics-loading-spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .5rem}
+    /* Blog Agent */
+    .blog-layout{display:grid;grid-template-columns:340px 1fr;gap:1.25rem;min-height:700px}
+    .blog-form-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+    .blog-form-header{padding:.875rem 1.25rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.82rem;color:var(--text)}
+    .blog-form-body{padding:1.25rem;display:flex;flex-direction:column;gap:.875rem;flex:1;overflow-y:auto}
+    .blog-field{display:flex;flex-direction:column;gap:.3rem}
+    .blog-label{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+    .blog-input,.blog-select,.blog-textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;padding:.5rem .75rem;outline:none;transition:border-color .15s;appearance:none}
+    .blog-input:focus,.blog-select:focus,.blog-textarea:focus{border-color:var(--green)}
+    .blog-textarea{resize:vertical;min-height:70px;line-height:1.5}
+    .blog-generate-btn{background:var(--green);border:none;border-radius:8px;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:.82rem;padding:.625rem 1rem;cursor:pointer;transition:opacity .15s;width:100%;margin-top:.25rem}
+    .blog-generate-btn:hover{opacity:.85}.blog-generate-btn:disabled{opacity:.4;cursor:not-allowed}
+    .blog-preview-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+    .blog-preview-header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:1px solid var(--border);flex-shrink:0;gap:.75rem}
+    .blog-preview-title-area{flex:1;min-width:0}
+    .blog-preview-title{font-weight:700;font-size:.88rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .blog-preview-meta{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:2px}
+    .blog-action-row{display:flex;gap:.5rem;flex-shrink:0}
+    .blog-action-btn{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.04em;text-transform:uppercase;padding:.35rem .875rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .12s;white-space:nowrap}
+    .blog-action-btn:hover{border-color:var(--green);color:var(--green)}
+    .blog-action-btn.publish{background:var(--green);border-color:var(--green);color:white}
+    .blog-action-btn.publish:hover{opacity:.85}
+    .blog-action-btn:disabled{opacity:.4;cursor:not-allowed}
+    .blog-preview-body{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+    .blog-post-meta{display:flex;gap:1.5rem;padding:.875rem 1.5rem;border-bottom:1px solid var(--border);background:var(--surface-2);flex-shrink:0;flex-wrap:wrap}
+    .blog-post-meta-item{display:flex;flex-direction:column;gap:2px}
+    .blog-post-meta-label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+    .blog-post-meta-value{font-size:.75rem;color:var(--text-2)}
+    .blog-post-content{padding:1.5rem 2rem;flex:1;font-size:.88rem;line-height:1.8;color:var(--text-2)}
+    .blog-post-content h2{font-size:1.1rem;font-weight:700;color:var(--text);margin:1.5rem 0 .5rem;letter-spacing:-.01em}
+    .blog-post-content h3{font-size:.95rem;font-weight:600;color:var(--text);margin:1.25rem 0 .4rem}
+    .blog-post-content p{margin-bottom:.875rem}
+    .blog-post-content ul,.blog-post-content ol{margin:.5rem 0 .875rem 1.5rem}
+    .blog-post-content li{margin-bottom:.3rem}
+    .blog-post-content strong{color:var(--text);font-weight:600}
+    .blog-empty{padding:4rem 2rem;text-align:center;color:var(--muted);font-size:.82rem;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem}
+    .blog-generating{padding:4rem 2rem;text-align:center;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:var(--muted)}
+    .blog-generating-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite}
+    .blog-tags{display:flex;flex-wrap:wrap;gap:.375rem;margin-top:.25rem}
+    .blog-tag{font-family:'DM Mono',monospace;font-size:.62rem;padding:2px 8px;border-radius:4px;background:var(--green-dim);color:var(--green);border:1px solid rgba(0,168,112,.2)}
+    .blog-success-banner{background:var(--green-dim);border:1px solid rgba(0,168,112,.2);border-radius:8px;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;margin:.875rem 1.25rem;flex-shrink:0}
+    .blog-success-text{font-size:.78rem;color:var(--green);font-weight:500}
+    .blog-success-link{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--green);text-decoration:underline;cursor:pointer}
   </style>
 </head>
 <body>
@@ -407,6 +450,11 @@
       <div class="nav-item" onclick="switchView('ga')"><div class="nav-item-icon" style="background:var(--blue-dim)">&#128202;</div>GA Analytics Agent<span class="nav-badge badge-live">Live</span></div>
       <div class="nav-item" onclick="switchView('metrics')"><div class="nav-item-icon" style="background:var(--purple-dim)">&#128200;</div>Marketing Metrics Agent<span class="nav-badge badge-soon">Soon</span></div>
     </div>
+    <div class="nav-divider"></div>
+    <div><div class="sidebar-section-label">Content</div>
+      <div class="nav-item" onclick="switchView('blog')"><div class="nav-item-icon" style="background:var(--green-dim)">&#9997;</div>Blog Agent<span class="nav-badge badge-live">Live</span></div>
+    </div>
+    <div class="nav-divider"></div>
     <div><div class="sidebar-section-label">System</div>
       <div class="nav-item" onclick="switchView('context')"><div class="nav-item-icon" style="background:var(--yellow-dim)">&#128193;</div>Context Editor<span class="nav-badge badge-live">Live</span></div>
     </div>
@@ -710,6 +758,73 @@
 
       <div id="gaReportOutput">
         <div class="ga-loading"><div class="ga-loading-spinner"></div>Loading analytics data...</div>
+      </div>
+    </div>
+    <div class="view" id="view-blog">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Blog Agent</div>
+          <div class="page-subtitle">Draft and publish blog posts to operative.com — powered by your context layer and live web search</div>
+        </div>
+      </div>
+      <div class="blog-layout">
+
+        <!-- Left: Form -->
+        <div class="blog-form-panel">
+          <div class="blog-form-header">New Post</div>
+          <div class="blog-form-body">
+            <div class="blog-field">
+              <label class="blog-label">Topic or title idea</label>
+              <input class="blog-input" id="blogTopic" placeholder="e.g. Why the OMS is the new revenue stack" autocomplete="off"/>
+            </div>
+            <div class="blog-field">
+              <label class="blog-label">Post type</label>
+              <select class="blog-select" id="blogType">
+                <option value="thought-leadership">Thought leadership / market POV</option>
+                <option value="product-announcement">Product or feature announcement</option>
+                <option value="seo">SEO-driven / keyword-targeted</option>
+                <option value="campaign">Campaign-aligned content</option>
+              </select>
+            </div>
+            <div class="blog-field" id="blogKeywordField">
+              <label class="blog-label">Target keyword <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <input class="blog-input" id="blogKeyword" placeholder="e.g. ad order management software" autocomplete="off"/>
+            </div>
+            <div class="blog-field">
+              <label class="blog-label">Angle or POV <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <input class="blog-input" id="blogAngle" placeholder="e.g. Most publishers are solving the wrong problem" autocomplete="off"/>
+            </div>
+            <div class="blog-field">
+              <label class="blog-label">Additional notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <textarea class="blog-textarea" id="blogNotes" placeholder="Specific points to hit, stats to include, audience nuance..."></textarea>
+            </div>
+            <button class="blog-generate-btn" id="blogGenerateBtn" onclick="generateBlogPost()">&#9997; Generate Post</button>
+          </div>
+        </div>
+
+        <!-- Right: Preview -->
+        <div class="blog-preview-panel">
+          <div class="blog-preview-header">
+            <div class="blog-preview-title-area">
+              <div class="blog-preview-title" id="blogPreviewTitle">Draft preview</div>
+              <div class="blog-preview-meta" id="blogPreviewMeta">Fill in the form and click Generate</div>
+            </div>
+            <div class="blog-action-row">
+              <button class="blog-action-btn" id="blogCopyBtn" onclick="copyBlogPost()" style="display:none">Copy HTML</button>
+              <button class="blog-action-btn" id="blogRegenerateBtn" onclick="generateBlogPost()" style="display:none">Regenerate</button>
+              <button class="blog-action-btn publish" id="blogPublishBtn" onclick="publishBlogPost()" style="display:none">Push to WordPress &rarr;</button>
+            </div>
+          </div>
+          <div id="blogSuccessBanner" style="display:none"></div>
+          <div class="blog-preview-body" id="blogPreviewBody">
+            <div class="blog-empty">
+              <div style="font-size:2rem">&#9997;</div>
+              <div style="font-weight:600;color:var(--text-2)">No draft yet</div>
+              <div>Fill in the topic and click Generate to create a post</div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </main>
