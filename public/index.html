@@ -433,7 +433,7 @@
         <div class="brain-salesforce-note"><span>&#128279;</span><span>Connect Salesforce to unlock pipeline insights, deal analysis, and win/loss intelligence</span></div>
         <div class="brain-messages" id="brainMessages"></div>
         <div class="brain-input-row">
-          <textarea class="brain-input" id="brainInput" placeholder="Ask anything about your market, pipeline, or campaigns..." rows="1"
+          <textarea class="brain-input" id="brainInput" placeholder="Ask anything about your market, pipeline, or campaigns..." autocomplete="off" rows="1"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendBrainMessage();}"
             oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
           <button class="brain-send" id="brainSend" onclick="sendBrainMessage()">&#10148;</button>
@@ -455,7 +455,7 @@
             <button class="home-brain-chip" onclick="homeAsk('Which STAQ prospects opened email 1?')">STAQ pipeline &rarr;</button>
           </div>
           <div class="home-brain-input-row">
-            <input class="home-brain-input" id="homeBrainInput" placeholder="Ask Marketing Brain anything..." onkeydown="if(event.key==='Enter') homeSubmit()">
+            <input class="home-brain-input" id="homeBrainInput" placeholder="Ask Marketing Brain anything..." autocomplete="off" onkeydown="if(event.key==='Enter') homeSubmit()">
             <button class="home-brain-send" onclick="homeSubmit()">&#10148;</button>
           </div>
         </div>
