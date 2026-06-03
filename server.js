@@ -396,41 +396,47 @@ async function assembleBrainContext() {
     }
   } catch (err) { console.error("[brain context] learnings:", err.message); }
 
-  // 3. HubSpot email metrics
+  // 3. HubSpot email metrics — all outbound emails, not just hardcoded IDs
   try {
-    const emailIds = [
-      { name: "AOS Email 1", id: "209930076194" },
-      { name: "AOS Email 2", id: "209930191703" },
-      { name: "AOS Email 3", id: "209930208573" },
-      { name: "STAQ Email 1", id: "210411155104" },
-      { name: "STAQ Email 2", id: "210407639089" },
-      { name: "STAQ Email 3", id: "210407658574" },
-    ];
-    const metricsRows = await Promise.all(emailIds.map(async (e) => {
-      const emailRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/${e.id}`, {
-        headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
-      });
-      if (!emailRes.ok) return null;
-      const emailData = await emailRes.json();
-      const campaignIds = emailData.allEmailCampaignIds || [];
-      if (!campaignIds.length) return null;
-      let sent = 0, delivered = 0, opened = 0, clicked = 0;
-      for (const cid of campaignIds) {
-        const sr = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${cid}`, {
-          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
-        });
-        if (sr.ok) {
-          const d = await sr.json(); const c = d.counters || {};
-          sent += c.sent || 0; delivered += c.delivered || 0;
-          opened += c.open || c.opens || 0; clicked += c.click || c.clicks || 0;
+    // Fetch all marketing emails from HubSpot (paginated, up to 100)
+    const allEmails = [];
+    let after = null;
+    do {
+      const url = `https://api.hubapi.com/marketing/v3/emails?limit=50${after ? `&after=${after}` : ""}&orderBy=-updatedAt`;
+      const r = await fetch(url, { headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` } });
+      if (!r.ok) break;
+      const data = await r.json();
+      const emails = (data.results || []).filter(e =>
+        e.state === "PUBLISHED" || e.state === "PUBLISHED_OR_SCHEDULED" || e.counters?.sent > 0
+      );
+      allEmails.push(...emails);
+      after = data.paging?.next?.after || null;
+    } while (after && allEmails.length < 100);
+
+    if (allEmails.length) {
+      // Pull campaign stats for each email
+      const metricsRows = await Promise.all(allEmails.map(async (email) => {
+        const campaignIds = email.allEmailCampaignIds || [];
+        if (!campaignIds.length) return null;
+        let sent = 0, delivered = 0, opened = 0, clicked = 0;
+        for (const cid of campaignIds) {
+          const sr = await fetch(`https://api.hubapi.com/email/public/v1/campaigns/${cid}`, {
+            headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
+          });
+          if (sr.ok) {
+            const d = await sr.json(); const c = d.counters || {};
+            sent += c.sent || 0; delivered += c.delivered || 0;
+            opened += c.open || c.opens || 0; clicked += c.click || c.clicks || 0;
+          }
         }
-      }
-      const denom = delivered || sent;
-      if (!sent) return null;
-      return `${e.name}: ${sent} sent, ${denom > 0 ? ((opened/denom)*100).toFixed(1) : 0}% open, ${denom > 0 ? ((clicked/denom)*100).toFixed(1) : 0}% CTR`;
-    }));
-    const rows = metricsRows.filter(Boolean);
-    if (rows.length) parts.push(`## HubSpot Email Performance\n${rows.join("\n")}`);
+        const denom = delivered || sent;
+        if (!sent) return null;
+        const name = email.name || email.subject || `Email ${email.id}`;
+        return `${name}: ${sent} sent, ${denom > 0 ? ((opened/denom)*100).toFixed(1) : 0}% open, ${denom > 0 ? ((clicked/denom)*100).toFixed(1) : 0}% CTR`;
+      }));
+      const rows = metricsRows.filter(Boolean);
+      if (rows.length) parts.push(`## HubSpot Email Performance (All Campaigns)\n${rows.join("\n")}`);
+    }
   } catch (err) { console.error("[brain context] hubspot:", err.message); }
 
   // 4. Google Analytics
