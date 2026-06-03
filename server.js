@@ -398,22 +398,37 @@ async function assembleBrainContext() {
 
   // 3. HubSpot email metrics — all outbound emails with any send activity
   try {
-    // Fetch all marketing emails ordered by most recent — get everything that has been sent
+    // Fetch all marketing emails. We'll filter by publishDate after fetching.
     const allEmails = [];
     let after = null;
     do {
-      const qs = `limit=50&orderBy=-updatedAt${after ? `&after=${after}` : ""}`;
+      const qs = `limit=50&orderBy=-publishDate${after ? `&after=${after}` : ""}`;
       const r = await fetch(`https://api.hubapi.com/marketing/v3/emails?${qs}`, {
         headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
       });
       if (!r.ok) break;
       const data = await r.json();
-      allEmails.push(...(data.results || []));
+      const batch = data.results || [];
+      allEmails.push(...batch);
       after = data.paging?.next?.after || null;
-      // Stop paginating once we hit emails older than 2 years
-      const oldest = allEmails[allEmails.length - 1];
-      if (oldest?.updatedAt && new Date(oldest.updatedAt) < new Date(Date.now() - 2 * 365 * 24 * 60 * 60 * 1000)) break;
+      // Stop once we hit emails published more than 18 months ago
+      const oldest = batch[batch.length - 1];
+      if (oldest?.publishDate && new Date(oldest.publishDate) < new Date(Date.now() - 18 * 30 * 24 * 60 * 60 * 1000)) break;
     } while (after && allEmails.length < 200);
+    
+    // Always ensure our core nurture emails are included by fetching them directly
+    const coreIds = ["209930076194","209930191703","209930208573","210411155104","210407639089","210407658574"];
+    const existingIds = new Set(allEmails.map(e => String(e.id)));
+    const missing = coreIds.filter(id => !existingIds.has(id));
+    if (missing.length) {
+      const coreResults = await Promise.all(missing.map(async id => {
+        const r = await fetch(`https://api.hubapi.com/marketing/v3/emails/${id}`, {
+          headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
+        });
+        return r.ok ? r.json() : null;
+      }));
+      allEmails.push(...coreResults.filter(Boolean));
+    }
 
     // For each email, get stats directly from the email object's counters
     // (avoids campaign endpoint entirely — works even without HubSpot campaigns)
