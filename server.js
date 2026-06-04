@@ -1057,10 +1057,15 @@ Return ONLY valid JSON. No preamble, no markdown code fences.`;
     const post = JSON.parse(jsonMatch[0]);
 
     // Strip any <em> and <i> tags — replace with their text content (no italics policy)
+    // Use a loop to handle nested/multiline cases
     if (post.body) {
-      post.body = post.body
-        .replace(/<em>(.*?)<\/em>/gi, "$1")
-        .replace(/<i>(.*?)<\/i>/gi, "$1");
+      let prev = "";
+      while (prev !== post.body) {
+        prev = post.body;
+        post.body = post.body
+          .replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, "$1")
+          .replace(/<i[^>]*>([\s\S]*?)<\/i>/gi, "$1");
+      }
     }
 
     res.json(post);
