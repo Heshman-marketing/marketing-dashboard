@@ -903,7 +903,7 @@ app.get("/api/email-metrics/recent", async (req, res) => {
 // POST /api/blog/generate
 // Body: { topic, type, keyword, angle, notes }
 app.post("/api/blog/generate", async (req, res) => {
-  const { topic, type = "thought-leadership", keyword = "", angle = "", notes = "" } = req.body || {};
+  const { topic, type = "thought-leadership", keyword = "", angle = "", notes = "", wordCount = "" } = req.body || {};
   if (!topic) return res.status(400).json({ error: "topic required" });
 
   try {
@@ -976,6 +976,7 @@ STRICT PROHIBITIONS:
 - No generic marketing language: "game-changer," "revolutionary," "unlock," "leverage," "delve," "navigate," "landscape," "seamless," "cutting-edge," "robust"
 - Minimize passive voice
 - Never use "In my role as," "In my experience as," "As VP of Marketing," "As someone who," or any variant that explicitly references the author's position or role — the authority should come through in the writing itself, not stated
+- No italics — never use <em> or <i> tags in the HTML output
 
 ${contextBlock ? `CONTEXT FROM KNOWLEDGE BASE:\n${contextBlock.slice(0, 4000)}\n\n` : ""}
 
@@ -985,6 +986,7 @@ Topic: ${topic}
 ${angle ? `Angle / POV: ${angle}` : ""}
 ${keyword ? `Target keyword: ${keyword}` : ""}
 ${notes ? `Additional notes: ${notes}` : ""}
+${wordCount ? `Target word count: approximately ${wordCount} words` : "Target word count: 800+ words minimum"}
 
 Return a JSON object with exactly these fields:
 {
@@ -994,7 +996,7 @@ Return a JSON object with exactly these fields:
   "tags": ["tag1", "tag2", "tag3"],
   "categories": ["suggested category name"],
   "estimatedReadTime": "X min read",
-  "body": "The full post body in HTML. Use <h2> and <h3> for sections, <p> for paragraphs, <ul>/<li> for lists, <strong> for emphasis where it genuinely adds value. No <html>, <head>, or <body> tags. No inline styles. Minimum 800 words. Go deep — this is a substantive thought leadership piece, not a listicle."
+  "body": "The full post body in HTML. Use <h2> and <h3> for sections, <p> for paragraphs, <ul>/<li> for lists, <strong> for emphasis where it genuinely adds value. No <html>, <head>, or <body> tags. No inline styles. No <em> or <i> tags. Hit the target word count. Go deep — this is a substantive thought leadership piece, not a listicle."
 }
 
 Return ONLY valid JSON. No preamble, no markdown code fences.`;
