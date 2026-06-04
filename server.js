@@ -941,7 +941,7 @@ app.post("/api/blog/generate", async (req, res) => {
 
     const typeDesc = typeDescriptions[type] || typeDescriptions["thought-leadership"];
 
-    const prompt = `You are a senior content strategist writing for Operative, a B2B ad tech company.
+    const prompt = `You are the VP of Marketing at Operative, a B2B ad tech company, writing a blog post for the Operative website.
 
 Operative sells:
 - AOS (Ad Operating System) — the OMS for digital media, premium publishers, and streaming platforms
@@ -949,9 +949,33 @@ Operative sells:
 - Adeline AI — agentic AI layer for automated deal decisioning
 - OnAir — linear ad management for broadcast TV
 
-Target audience: VPs and Directors of Revenue, Ad Ops, and Technology at premium publishers, broadcasters, streaming platforms, and sports media companies.
+Target audience: C-suite and VP-level executives who run media companies — broadcasters, premium publishers, streaming platforms, sports media, and digital-native media businesses.
 
-Brand voice: Direct, confident, specific. No filler. No em-dashes. No corporate-speak. Write like a smart practitioner, not a marketer.
+WRITING STYLE — follow these rules precisely:
+
+1. PROFESSIONAL THOUGHT LEADERSHIP: Write as a senior practitioner with genuine authority. Every sentence earns its place. No filler, no hedging, no corporate-speak. This should read like it was written by someone who has spent years inside media companies and understands the real operational and strategic pressures they face.
+
+2. PRACTICAL AND SPECIFIC: Provide actionable steps and real-world examples. Break complex ideas into concrete, doable actions. When citing examples or data, include source context. Go deeper than the reader expects — be thought-provoking and intellectually rigorous.
+
+3. URGENCY WITHOUT ALARM: Communicate the cost of inaction while keeping the message forward-looking and positive. Highlight time-sensitive opportunities without being alarmist.
+
+4. STRATEGIC REPETITION: Use variations of the same core idea to drive the point home. Create memorable phrases that stick. Reinforce the central argument from multiple angles so it lands.
+
+5. DIRECT BUT REFRAMED: Engage the audience directly but frame insights around media companies as a category. Use "you" or "your company" sparingly and intentionally — not in every paragraph.
+
+6. CONTRAST FOR IMPACT: Juxtapose old thinking with new perspectives. Highlight the difference between action and inaction. Compare short-term discomfort with long-term competitive advantage.
+
+7. VISUAL STRUCTURE: Use clear H2 and H3 headings. Well-organized and scannable. Go into more detail than expected. Each section should deliver genuine insight, not just restate the obvious.
+
+8. STRONG CLOSE: End with a clear, actionable call-to-action. Encourage immediate implementation. Invite engagement.
+
+STRICT PROHIBITIONS:
+- No em-dashes under any circumstances (restructure the sentence, use a colon, or use a comma instead)
+- No emoji
+- No hashtags
+- No generic marketing language: "game-changer," "revolutionary," "unlock," "leverage," "delve," "navigate," "landscape," "seamless," "cutting-edge," "robust"
+- Minimize passive voice
+- Never use "In my role as," "In my experience as," "As VP of Marketing," "As someone who," or any variant that explicitly references the author's position or role — the authority should come through in the writing itself, not stated
 
 ${contextBlock ? `CONTEXT FROM KNOWLEDGE BASE:\n${contextBlock.slice(0, 4000)}\n\n` : ""}
 
@@ -964,13 +988,13 @@ ${notes ? `Additional notes: ${notes}` : ""}
 
 Return a JSON object with exactly these fields:
 {
-  "title": "The post title (compelling, specific, under 70 chars)",
-  "metaDescription": "SEO meta description under 160 chars",
+  "title": "The post title (compelling, specific, authoritative — under 70 chars)",
+  "metaDescription": "SEO meta description under 160 chars — clear and compelling, no hype",
   "slug": "url-friendly-slug-from-title",
   "tags": ["tag1", "tag2", "tag3"],
   "categories": ["suggested category name"],
   "estimatedReadTime": "X min read",
-  "body": "The full post body in HTML. Use <h2> and <h3> for sections, <p> for paragraphs, <ul>/<li> for lists, <strong> for emphasis. No <html>, <head>, or <body> tags. No inline styles. At least 600 words."
+  "body": "The full post body in HTML. Use <h2> and <h3> for sections, <p> for paragraphs, <ul>/<li> for lists, <strong> for emphasis where it genuinely adds value. No <html>, <head>, or <body> tags. No inline styles. Minimum 800 words. Go deep — this is a substantive thought leadership piece, not a listicle."
 }
 
 Return ONLY valid JSON. No preamble, no markdown code fences.`;
