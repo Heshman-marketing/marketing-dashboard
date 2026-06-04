@@ -986,7 +986,18 @@ Topic: ${topic}
 ${angle ? `Angle / POV: ${angle}` : ""}
 ${keyword ? `Target keyword: ${keyword}` : ""}
 ${notes ? `Additional notes: ${notes}` : ""}
-${wordCount ? `Target word count: approximately ${wordCount} words` : "Target word count: 800+ words minimum"}
+
+WORD COUNT REQUIREMENT: ${wordCount ? `The post body MUST be approximately ${wordCount} words. Count carefully. Do not submit fewer than ${Math.round(parseInt(wordCount) * 0.9)} words.` : "The post body MUST be at least 800 words. Do not submit fewer than 800 words."}
+
+ABSOLUTE HTML RULES FOR THE BODY FIELD — NO EXCEPTIONS:
+- Use <h2> and <h3> for section headings
+- Use <p> for all paragraphs
+- Use <ul>/<li> for bullet lists
+- Use <strong> for emphasis only where it genuinely adds value
+- NEVER use <em> or <i> tags — not once, not ever
+- NEVER use <html>, <head>, <body>, or any wrapper tags
+- NEVER use inline styles
+- Every sentence that needs emphasis gets <strong>, never <em>
 
 Return a JSON object with exactly these fields:
 {
@@ -996,7 +1007,7 @@ Return a JSON object with exactly these fields:
   "tags": ["tag1", "tag2", "tag3"],
   "categories": ["suggested category name"],
   "estimatedReadTime": "X min read",
-  "body": "The full post body in HTML. Use <h2> and <h3> for sections, <p> for paragraphs, <ul>/<li> for lists, <strong> for emphasis where it genuinely adds value. No <html>, <head>, or <body> tags. No inline styles. No <em> or <i> tags. Hit the target word count. Go deep — this is a substantive thought leadership piece, not a listicle."
+  "body": "REQUIRED: Full HTML post body meeting all rules above. Hit the word count target exactly."
 }
 
 Return ONLY valid JSON. No preamble, no markdown code fences.`;
@@ -1044,6 +1055,14 @@ Return ONLY valid JSON. No preamble, no markdown code fences.`;
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) return res.status(500).json({ error: "Could not parse post from AI response", raw: text.slice(0, 500) });
     const post = JSON.parse(jsonMatch[0]);
+
+    // Strip any <em> and <i> tags — replace with their text content (no italics policy)
+    if (post.body) {
+      post.body = post.body
+        .replace(/<em>(.*?)<\/em>/gi, "$1")
+        .replace(/<i>(.*?)<\/i>/gi, "$1");
+    }
+
     res.json(post);
   } catch (err) {
     console.error("[blog/generate]", err.message);
