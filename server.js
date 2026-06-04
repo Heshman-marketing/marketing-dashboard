@@ -987,7 +987,7 @@ ${angle ? `Angle / POV: ${angle}` : ""}
 ${keyword ? `Target keyword: ${keyword}` : ""}
 ${notes ? `Additional notes: ${notes}` : ""}
 
-WORD COUNT REQUIREMENT: ${wordCount ? `The post body MUST be approximately ${wordCount} words. Count carefully. Do not submit fewer than ${Math.round(parseInt(wordCount) * 0.9)} words.` : "The post body MUST be at least 800 words. Do not submit fewer than 800 words."}
+WORD COUNT REQUIREMENT: ` + (wordCount ? ("The post body MUST be approximately " + wordCount + " words. Count carefully. Do not submit fewer than " + Math.round(parseInt(wordCount) * 0.9) + " words.") : "The post body MUST be at least 800 words. Do not submit fewer than 800 words.") + `
 
 ABSOLUTE HTML RULES FOR THE BODY FIELD — NO EXCEPTIONS:
 - Use <h2> and <h3> for section headings
