@@ -382,17 +382,25 @@ async function fetchGAMetrics() {
 async function assembleBrainContext() {
   const parts = [];
 
-  // 1. Context layer files
+  // 1. Context layer files — fetch all files dynamically
   try {
-    const [globalRes, aosRes, staqRes, competitiveRes] = await Promise.all([
-      fetch(`${CONTEXT_SERVICE_URL}/file?path=global/operative-products.md`),
-      fetch(`${CONTEXT_SERVICE_URL}/file?path=agents/aos-nurture.md`),
-      fetch(`${CONTEXT_SERVICE_URL}/file?path=agents/staq-prospecting.md`),
-      fetch(`${CONTEXT_SERVICE_URL}/file?path=global/competitive-overview.md`),
-    ]);
-    const files = [globalRes, aosRes, staqRes, competitiveRes];
-    for (const r of files) {
-      if (r.ok) { const d = await r.json(); if (d.content) parts.push(d.content); }
+    const listRes = await fetch(`${CONTEXT_SERVICE_URL}/files`);
+    if (listRes.ok) {
+      const fileList = await listRes.json();
+      // Flatten all sections into a single list of paths
+      const allPaths = Object.values(fileList).flat().map(f => f.path || f);
+      // Fetch all files in parallel, skip learnings (handled separately below)
+      const nonLearnings = allPaths.filter(p => !p.startsWith('learnings/'));
+      const fileResults = await Promise.all(
+        nonLearnings.map(p =>
+          fetch(`${CONTEXT_SERVICE_URL}/file?path=${encodeURIComponent(p)}`)
+            .then(r => r.ok ? r.json() : null)
+            .catch(() => null)
+        )
+      );
+      for (const d of fileResults) {
+        if (d?.content) parts.push(d.content);
+      }
     }
   } catch (err) { console.error("[brain context] context files:", err.message); }
 
