@@ -503,8 +503,8 @@
             <button class="home-brain-chip" onclick="homeAsk('Draft a LinkedIn post about Adeline AI')">LinkedIn draft &rarr;</button>
             <button class="home-brain-chip" onclick="homeAsk('Which STAQ prospects opened email 1?')">STAQ pipeline &rarr;</button>
           </div>
-          <div class="home-brain-input-row">
-            <input class="home-brain-input" id="homeBrainInput" placeholder="Ask Marketing Brain anything..." autocomplete="off" name="search" onkeydown="if(event.key==='Enter') homeSubmit()">
+          <div class="home-brain-input-row"><input type="text" name="fake_user_x7k" style="display:none" tabindex="-1" aria-hidden="true"/><input type="password" name="fake_pass_x7k" style="display:none" tabindex="-1" aria-hidden="true"/>
+            <input class="home-brain-input" id="homeBrainInput" placeholder="Ask Marketing Brain anything..." autocomplete="new-password" name="homeBrainInput" role="searchbox" onkeydown="if(event.key==='Enter') homeSubmit()">
             <button class="home-brain-send" onclick="homeSubmit()">&#10148;</button>
           </div>
         </div>
