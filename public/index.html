@@ -22,6 +22,21 @@
       --text: #f0f4ff;
       --text-2: #a8b4cc;
       --text-3: #6b7a99;
+
+    /* light theme overrides */
+    html.light {
+      --bg: #f4f5f7;
+      --bg-2: #ffffff;
+      --bg-3: #f0f1f3;
+      --surface: #ffffff;
+      --surface-2: #f4f5f7;
+      --surface-3: #ebedf0;
+      --border: rgba(0,0,0,0.07);
+      --border-2: rgba(0,0,0,0.12);
+      --text: #111827;
+      --text-2: #374151;
+      --text-3: #6b7280;
+    }
       --orange: #ff5c1a;
       --orange-glow: rgba(255,92,26,0.15);
       --orange-dim: rgba(255,92,26,0.08);
@@ -934,6 +949,7 @@
     </div>
     <div class="topbar-right">
       <div class="topbar-status"><div class="status-dot"></div><span id="topbarTime">Connecting...</span></div>
+      <button class="topbar-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Toggle light/dark mode">☀</button>
       <button class="topbar-btn" onclick="loadAll()">↻ Refresh</button>
     </div>
   </header>
@@ -1741,15 +1757,13 @@ async function runCompetitor(c) {
 // ── Email metrics ────────────────────────────────────────────────────────────
 async function loadEmailMetrics() {
   const s = document.getElementById('emailMetricsSection'); if (!s) return;
+  s.innerHTML = '<div style="padding:.5rem 0;color:var(--text-3);font-size:.72rem">Loading metrics...</div>';
   try {
-    const res = await fetch('/api/email-metrics');
-    const metrics = await res.json();
-    if (metrics.error) { s.innerHTML = `<div style="padding:.5rem 0;color:var(--text-3);font-size:.72rem">Could not load metrics: ${escapeHtml(metrics.error)}</div>`; return; }
-    const aos = metrics.filter(m => m.group === 'AOS'), staq = metrics.filter(m => m.group === 'STAQ');
-    function rg(items, label) {
-      return `<div style="margin-bottom:1rem"><div class="metrics-group-label">${label}</div><div class="metrics-row">${items.map(m => `<div class="metric-card ${m.found?'':'not-found'}"><div class="metric-email-name">${m.name.replace('AOS Nurture ','').replace('STAQ Nurture ','')}</div><div class="metric-stats"><div class="metric-stat"><div class="metric-value">${m.found?m.sent.toLocaleString():'--'}</div><div class="metric-label">Sent</div></div><div class="metric-stat"><div class="metric-value accent">${m.found?m.openRate+'%':'--'}</div><div class="metric-label">Open Rate</div></div><div class="metric-stat"><div class="metric-value accent">${m.found?m.clickRate+'%':'--'}</div><div class="metric-label">CTR</div></div></div></div>`).join('')}</div></div>`;
-    }
-    s.innerHTML = rg(aos,'AOS Prospecting') + rg(staq,'STAQ Prospecting');
+    const res = await fetch('/api/email-metrics/recent?limit=10');
+    const emails = await res.json();
+    if (!emails?.length || emails.error) { s.innerHTML = '<div style="padding:.5rem 0;color:var(--text-3);font-size:.72rem">No email metrics found.</div>'; return; }
+    const rows = emails.map(m => `<div class="metric-card"><div class="metric-email-name">${escapeHtml(m.name||'').replace('AOS Nurture ','').replace('STAQ Nurture ','')}</div><div class="metric-stats"><div class="metric-stat"><div class="metric-value">${(m.sent||0).toLocaleString()}</div><div class="metric-label">Sent</div></div><div class="metric-stat"><div class="metric-value accent">${m.openRate||0}%</div><div class="metric-label">Open Rate</div></div><div class="metric-stat"><div class="metric-value accent">${m.clickRate||0}%</div><div class="metric-label">CTR</div></div></div></div>`).join('');
+    s.innerHTML = `<div style="margin-bottom:1rem"><div class="metrics-group-label">Recent Email Performance</div><div class="metrics-row" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">${rows}</div></div>`;
   } catch { s.innerHTML = '<div style="padding:.5rem 0;color:var(--text-3);font-size:.72rem">Could not load metrics.</div>'; }
 }
 
@@ -2161,6 +2175,25 @@ function loadAll() {
   loadHomeGA();
   loadHomeHS();
 }
+
+// ── Theme toggle ─────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isLight = document.documentElement.classList.toggle('light');
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) btn.textContent = isLight ? '🌙' : '☀';
+  try { localStorage.setItem('theme', isLight ? 'light' : 'dark'); } catch {}
+}
+function initTheme() {
+  try {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'light') {
+      document.documentElement.classList.add('light');
+      const btn = document.getElementById('themeToggleBtn');
+      if (btn) btn.textContent = '🌙';
+    }
+  } catch {}
+}
+initTheme();
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 renderReviewQueue();
