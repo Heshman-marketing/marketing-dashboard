@@ -1298,7 +1298,7 @@
               <input type="password" name="fake_msg_p" style="display:none" tabindex="-1" aria-hidden="true"/>
               <div class="msg-field">
                 <label class="msg-label">Product</label>
-                <select class="msg-select" id="msgProduct" onchange="handleMsgProductChange()">
+                <select class="msg-select" id="msgProduct" onchange="handleMsgProductChange()" autocomplete="off">
                   <option value="AOS">AOS</option>
                   <option value="Adeline">Adeline AI</option>
                   <option value="Operative One">Operative One</option>
@@ -1326,7 +1326,7 @@
                   <span id="msgFileName" class="upload-file-name"></span>
                 </div>
                 <input type="file" id="msgFileInput" accept=".pdf,.doc,.docx,.txt,.md,.html" style="display:none" onchange="handleMsgFile(event)"/>
-                <textarea class="msg-textarea" id="msgSource" placeholder="Or paste press releases, product pages, internal narratives..." style="min-height:55px;margin-top:.3rem" autocomplete="new-password"></textarea>
+                <textarea class="msg-textarea" id="msgSource" placeholder="Or paste press releases, product pages, internal narratives..." style="min-height:55px;margin-top:.3rem" autocomplete="new-password" autocomplete="new-password"></textarea>
               </div>
               <div class="msg-field">
                 <label class="msg-label">Direction <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
