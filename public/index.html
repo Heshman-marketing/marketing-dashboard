@@ -993,6 +993,7 @@
     <div class="nav-section">
       <div class="nav-section-label">Analytics</div>
       <div class="nav-item" onclick="switchView('ga')"><span class="nav-icon">📊</span>GA Analytics<span class="nav-badge badge-live">Live</span></div>
+      <div class="nav-item" onclick="switchView('allemails')"><span class="nav-icon">📧</span>All Emails<span class="nav-badge badge-live">Live</span></div>
       <div class="nav-item" onclick="switchView('metrics')"><span class="nav-icon">📈</span>Marketing Metrics<span class="nav-badge badge-soon">Soon</span></div>
     </div>
     <div class="nav-divider"></div>
@@ -1099,7 +1100,7 @@
         <div class="analytics-panel">
           <div class="analytics-panel-hdr">
             <div class="analytics-panel-title"><div class="analytics-dot" style="background:var(--orange)"></div>HubSpot Email Performance</div>
-            <button class="analytics-panel-link" onclick="switchView('emails')">View emails →</button>
+            <button class="analytics-panel-link" onclick="switchView('allemails')">View emails →</button>
           </div>
           <div class="analytics-panel-body">
             <div id="homeHSContent"><div class="analytics-loading"><div class="analytics-spinner"></div>Loading...</div></div>
@@ -1467,6 +1468,12 @@
       </div></div>
     </div>
 
+    <!-- ── ALL EMAILS ── -->
+    <div class="view" id="view-allemails">
+      <div class="page-header"><div><div class="page-title">Email Performance</div><div class="page-subtitle">Last 20 published &amp; sent emails across all HubSpot campaigns</div></div></div>
+      <div id="allEmailsContent"><div class="analytics-loading"><div class="analytics-spinner"></div>Loading emails...</div></div>
+    </div>
+
     <!-- ── CONTEXT EDITOR ── -->
     <div class="view" id="view-context">
       <div class="page-header"><div><div class="page-title">Context Editor</div><div class="page-subtitle">View and edit the intelligence files every agent reads from</div></div></div>
@@ -1577,6 +1584,7 @@ function switchView(v) {
   }
   if (v === 'competitive') loadCompetitiveFeed();
   if (v === 'ga') runGAReport();
+  if (v === 'allemails') loadAllEmails();
 }
 
 // ── escapeHtml ───────────────────────────────────────────────────────────────
@@ -1759,11 +1767,15 @@ async function loadEmailMetrics() {
   const s = document.getElementById('emailMetricsSection'); if (!s) return;
   s.innerHTML = '<div style="padding:.5rem 0;color:var(--text-3);font-size:.72rem">Loading metrics...</div>';
   try {
-    const res = await fetch('/api/email-metrics/recent?limit=10');
-    const emails = await res.json();
-    if (!emails?.length || emails.error) { s.innerHTML = '<div style="padding:.5rem 0;color:var(--text-3);font-size:.72rem">No email metrics found.</div>'; return; }
-    const rows = emails.map(m => `<div class="metric-card"><div class="metric-email-name">${escapeHtml(m.name||'').replace('AOS Nurture ','').replace('STAQ Nurture ','')}</div><div class="metric-stats"><div class="metric-stat"><div class="metric-value">${(m.sent||0).toLocaleString()}</div><div class="metric-label">Sent</div></div><div class="metric-stat"><div class="metric-value accent">${m.openRate||0}%</div><div class="metric-label">Open Rate</div></div><div class="metric-stat"><div class="metric-value accent">${m.clickRate||0}%</div><div class="metric-label">CTR</div></div></div></div>`).join('');
-    s.innerHTML = `<div style="margin-bottom:1rem"><div class="metrics-group-label">Recent Email Performance</div><div class="metrics-row" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">${rows}</div></div>`;
+    const res = await fetch('/api/email-metrics');
+    const metrics = await res.json();
+    if (!metrics?.length || metrics.error) { s.innerHTML = '<div style="padding:.5rem 0;color:var(--text-3);font-size:.72rem">No email metrics found.</div>'; return; }
+    const aos = metrics.filter(m => m.group === 'AOS');
+    const staq = metrics.filter(m => m.group === 'STAQ');
+    function rg(items, label) {
+      return `<div style="margin-bottom:1rem"><div class="metrics-group-label">${label}</div><div class="metrics-row">${items.map(m => `<div class="metric-card ${m.found?'':'not-found'}"><div class="metric-email-name">${escapeHtml(m.name||'').replace('AOS Nurture ','').replace('STAQ Nurture ','')}</div><div class="metric-stats"><div class="metric-stat"><div class="metric-value">${m.found?(m.sent||0).toLocaleString():'--'}</div><div class="metric-label">Sent</div></div><div class="metric-stat"><div class="metric-value accent">${m.found?m.openRate+'%':'--'}</div><div class="metric-label">Open Rate</div></div><div class="metric-stat"><div class="metric-value accent">${m.found?m.clickRate+'%':'--'}</div><div class="metric-label">CTR</div></div></div></div>`).join('')}</div></div>`;
+    }
+    s.innerHTML = rg(aos, 'AOS Prospecting') + rg(staq, 'STAQ Prospecting');
   } catch { s.innerHTML = '<div style="padding:.5rem 0;color:var(--text-3);font-size:.72rem">Could not load metrics.</div>'; }
 }
 
@@ -2174,6 +2186,39 @@ function loadAll() {
   loadContextHealth();
   loadHomeGA();
   loadHomeHS();
+}
+
+// ── All Emails view ──────────────────────────────────────────────────────────
+async function loadAllEmails() {
+  const el = document.getElementById('allEmailsContent'); if (!el) return;
+  el.innerHTML = '<div class="analytics-loading"><div class="analytics-spinner"></div>Loading emails...</div>';
+  try {
+    const res = await fetch('/api/email-metrics/recent?limit=20');
+    const emails = await res.json();
+    if (!emails?.length || emails.error) { el.innerHTML = '<div class="analytics-loading" style="color:var(--text-3)">No emails found.</div>'; return; }
+    const rows = emails.map(m => `
+      <tr>
+        <td style="font-size:.75rem;color:var(--text);max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escapeHtml(m.name||'')}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-3);text-align:right">${(m.sent||0).toLocaleString()}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--orange);text-align:right;font-weight:600">${m.openRate||0}%</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--blue);text-align:right;font-weight:600">${m.clickRate||0}%</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-3);text-align:right">${m.publishDate ? new Date(m.publishDate).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '--'}</td>
+      </tr>`).join('');
+    el.innerHTML = `<div class="card" style="overflow:hidden">
+      <table style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:var(--surface-2)">
+            <th style="font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:.5rem 1rem;text-align:left;border-bottom:1px solid var(--border)">Email Name</th>
+            <th style="font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:.5rem 1rem;text-align:right;border-bottom:1px solid var(--border)">Sent</th>
+            <th style="font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:.5rem 1rem;text-align:right;border-bottom:1px solid var(--border)">Open Rate</th>
+            <th style="font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:.5rem 1rem;text-align:right;border-bottom:1px solid var(--border)">CTR</th>
+            <th style="font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);padding:.5rem 1rem;text-align:right;border-bottom:1px solid var(--border)">Date</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  } catch(err) { el.innerHTML = `<div class="analytics-loading" style="color:var(--red)">${escapeHtml(err.message)}</div>`; }
 }
 
 // ── Theme toggle ─────────────────────────────────────────────────────────────
