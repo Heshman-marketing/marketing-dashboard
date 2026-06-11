@@ -395,6 +395,45 @@
     .blog-success-banner{background:var(--green-dim);border:1px solid rgba(0,168,112,.2);border-radius:8px;padding:.75rem 1.25rem;display:flex;align-items:center;justify-content:space-between;margin:.875rem 1.25rem;flex-shrink:0}
     .blog-success-text{font-size:.78rem;color:var(--green);font-weight:500}
     .blog-success-link{font-family:'DM Mono',monospace;font-size:.62rem;color:var(--green);text-decoration:underline;cursor:pointer}
+    /* Product Messaging Agent */
+    .msg-layout{display:grid;grid-template-columns:300px 1fr;gap:1.25rem;min-height:700px}
+    .msg-form-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+    .msg-form-header{padding:.875rem 1.25rem;border-bottom:1px solid var(--border);font-weight:700;font-size:.82rem;color:var(--text)}
+    .msg-form-body{padding:1.25rem;display:flex;flex-direction:column;gap:.875rem;flex:1;overflow-y:auto}
+    .msg-field{display:flex;flex-direction:column;gap:.3rem}
+    .msg-label{font-family:'DM Mono',monospace;font-size:.6rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+    .msg-input,.msg-select,.msg-textarea{width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:7px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:.8rem;padding:.5rem .75rem;outline:none;transition:border-color .15s}
+    .msg-input:focus,.msg-select:focus,.msg-textarea:focus{border-color:var(--purple)}
+    .msg-textarea{resize:vertical;min-height:80px;line-height:1.5}
+    .msg-generate-btn{background:var(--purple);border:none;border-radius:8px;color:white;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600;font-size:.82rem;padding:.625rem 1rem;cursor:pointer;transition:opacity .15s;width:100%;margin-top:.25rem}
+    .msg-generate-btn:hover{opacity:.85}.msg-generate-btn:disabled{opacity:.4;cursor:not-allowed}
+    .msg-preview-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow:hidden}
+    .msg-preview-header{display:flex;align-items:center;justify-content:space-between;padding:.875rem 1.25rem;border-bottom:1px solid var(--border);gap:.75rem;flex-shrink:0}
+    .msg-preview-title{font-weight:700;font-size:.88rem;color:var(--text)}
+    .msg-preview-meta{font-family:'DM Mono',monospace;font-size:.6rem;color:var(--muted);margin-top:2px}
+    .msg-action-btn{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.04em;text-transform:uppercase;padding:.35rem .875rem;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .12s;white-space:nowrap}
+    .msg-action-btn:hover{border-color:var(--purple);color:var(--purple)}
+    .msg-action-btn.export{background:var(--purple);border-color:var(--purple);color:white}
+    .msg-action-btn.export:hover{opacity:.85}
+    .msg-action-btn:disabled{opacity:.4;cursor:not-allowed}
+    .msg-preview-body{flex:1;overflow-y:auto;padding:1.5rem 2rem}
+    .msg-empty{padding:4rem 2rem;text-align:center;color:var(--muted);font-size:.82rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.5rem;height:100%}
+    .msg-generating{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;padding:4rem;color:var(--muted);height:100%}
+    .msg-generating-spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--purple);border-radius:50%;animation:spin .8s linear infinite}
+    .msg-section{margin-bottom:1.75rem}
+    .msg-section-title{font-family:'DM Mono',monospace;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--orange);font-weight:600;margin-bottom:.375rem}
+    .msg-positioning{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.25rem;font-size:.88rem;line-height:1.7;color:var(--text-2)}
+    .msg-key-message{background:var(--navy, #061a3d);border-radius:8px;padding:1.25rem 1.5rem;font-size:1.15rem;font-weight:700;color:white;text-align:center;letter-spacing:-.01em}
+    .msg-supporting{background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--orange);border-radius:0 8px 8px 0;padding:.875rem 1.25rem;font-size:.88rem;line-height:1.6;color:var(--text-2)}
+    .msg-pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:.875rem}
+    .msg-pillar{background:var(--surface-2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+    .msg-pillar-header{background:#061a3d;padding:.625rem 1rem;font-weight:700;font-size:.82rem;color:white;text-align:center}
+    .msg-pillar-section{padding:.625rem 1rem;border-bottom:1px solid var(--border)}
+    .msg-pillar-section:last-child{border-bottom:none}
+    .msg-pillar-label{font-family:'DM Mono',monospace;font-size:.58rem;letter-spacing:.07em;text-transform:uppercase;color:var(--orange);margin-bottom:3px}
+    .msg-pillar-text{font-size:.78rem;color:var(--text-2);line-height:1.5}
+    .msg-feature{margin-bottom:.375rem;font-size:.75rem;color:var(--text-2)}
+    .msg-feature-name{font-weight:600;color:var(--text)}
   </style>
 </head>
 <body>
@@ -434,6 +473,7 @@
     </div>
     <div class="nav-divider"></div>
     <div><div class="sidebar-section-label">Sales Enablement</div>
+      <div class="nav-item" onclick="switchView('messaging')"><div class="nav-item-icon" style="background:var(--purple-dim)">&#127757;</div>Product Messaging Agent<span class="nav-badge badge-live">Live</span></div>
       <div class="nav-item" onclick="switchView('enablement')"><div class="nav-item-icon" style="background:var(--purple-dim)">&#127919;</div>Sales Enablement<span class="nav-badge badge-soon">Soon</span></div>
       <div class="nav-item" onclick="switchView('competitive')"><div class="nav-item-icon" style="background:var(--green-dim)">&#128302;</div>Competitive Intel<span class="nav-badge badge-live">Live</span></div>
       <div class="nav-item" onclick="switchView('messaging')"><div class="nav-item-icon" style="background:var(--yellow-dim)">&#128161;</div>Product Messaging<span class="nav-badge badge-soon">Soon</span></div>
@@ -835,6 +875,67 @@
               <div style="font-size:2rem">&#9997;</div>
               <div style="font-weight:600;color:var(--text-2)">No draft yet</div>
               <div>Fill in the topic and click Generate to create a post</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="view" id="view-messaging">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Product Messaging Agent</div>
+          <div class="page-subtitle">Generate structured messaging frameworks — positioning, key message, pillars, and features</div>
+        </div>
+      </div>
+      <div class="msg-layout">
+
+        <div class="msg-form-panel">
+          <div class="msg-form-header">New Framework</div>
+          <div class="msg-form-body">
+            <div class="msg-field">
+              <label class="msg-label">Product</label>
+              <select class="msg-select" id="msgProduct">
+                <option value="AOS">AOS (Ad Operating System)</option>
+                <option value="Adeline">Adeline AI</option>
+                <option value="Operative One">Operative One</option>
+                <option value="STAQ">STAQ</option>
+                <option value="OnAir">OnAir</option>
+                <option value="Operative Platform">Operative Platform (full suite)</option>
+              </select>
+            </div>
+            <div class="msg-field">
+              <label class="msg-label">Target Audience</label>
+              <input class="msg-input" id="msgAudience" placeholder="e.g. Revenue Ops leaders at premium publishers" autocomplete="off"/>
+            </div>
+            <div class="msg-field">
+              <label class="msg-label">Source Material <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <textarea class="msg-textarea" id="msgSource" placeholder="Paste press releases, product pages, internal narratives, or any reference material..."></textarea>
+            </div>
+            <div class="msg-field">
+              <label class="msg-label">Direction / Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <textarea class="msg-textarea" id="msgNotes" placeholder="Specific angles, tone guidance, pillars to emphasize..."></textarea>
+            </div>
+            <button class="msg-generate-btn" id="msgGenerateBtn" onclick="generateMessaging()">&#127757; Generate Framework</button>
+          </div>
+        </div>
+
+        <div class="msg-preview-panel">
+          <div class="msg-preview-header">
+            <div>
+              <div class="msg-preview-title" id="msgPreviewTitle">Framework preview</div>
+              <div class="msg-preview-meta" id="msgPreviewMeta">Select a product and click Generate</div>
+            </div>
+            <div style="display:flex;gap:.5rem">
+              <button class="msg-action-btn" id="msgRegenBtn" onclick="generateMessaging()" style="display:none">Regenerate</button>
+              <button class="msg-action-btn export" id="msgExportBtn" onclick="exportMessaging()" style="display:none">Download Word</button>
+            </div>
+          </div>
+          <div class="msg-preview-body" id="msgPreviewBody">
+            <div class="msg-empty">
+              <div style="font-size:2rem">&#127757;</div>
+              <div style="font-weight:600;color:var(--text-2)">No framework yet</div>
+              <div>Select a product and click Generate</div>
             </div>
           </div>
         </div>
