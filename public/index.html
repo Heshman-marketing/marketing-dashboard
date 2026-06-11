@@ -984,7 +984,7 @@ function switchView(v){
   try{localStorage.setItem('activeView',v);}catch{}
   document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
   document.querySelectorAll('.view').forEach(e=>e.classList.remove('active'));
-  const ni=document.querySelector('.nav-item[onclick="switchView(\''+v+'\')"]');
+  const ni=Array.from(document.querySelectorAll('.nav-item')).find(el=>el.getAttribute('onclick')==="switchView('"+v+"')");
   if(ni)ni.classList.add('active');
   const vi=document.getElementById('view-'+v);if(vi)vi.classList.add('active');
   if(v==='emails'&&!window._emailLoaded){window._emailLoaded=true;loadContacts('aos');loadEmailMetrics();}
