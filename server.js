@@ -1,4 +1,8 @@
 const express = require("express");
+const docx = require("docx");
+const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+  AlignmentType, BorderStyle, WidthType, ShadingType, Header, Footer, PageNumber
+} = docx;
 const fetch = require("node-fetch");
 const path = require("path");
 const multer = require("multer");
@@ -1278,11 +1282,7 @@ app.post("/api/messaging/export", async (req, res) => {
   const framework = req.body;
   if (!framework?.product) return res.status(400).json({ error: "framework data required" });
   try {
-    const {
-      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-      AlignmentType, BorderStyle, WidthType, ShadingType, Header, Footer, PageNumber
-    } = require("docx");
-
+    // docx loaded at module level
     const NAVY="061A3D",ORANGE="FC5000",LGRAY="F5F6F8",MGRAY="E4E7ED",DGRAY="32415E",WHITE="FFFFFF",TEXT2="1A2333",MUTED="6B7A8D";
     const nb={style:BorderStyle.NONE,size:0,color:"FFFFFF"};
     const cb=(c=MGRAY)=>({style:BorderStyle.SINGLE,size:4,color:c});
