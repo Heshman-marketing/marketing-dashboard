@@ -242,23 +242,17 @@ app.get("/api/email-metrics", async (req, res) => {
   ];
   try {
     // Fetch all emails from HubSpot and match by name
-    const allEmails = [];
-    let after = null;
-    do {
-      const qs = "limit=100" + (after ? "&after=" + after : "");
+    // Search for each email by name directly
+    const emails = await Promise.all(targets.map(async t => {
+      const qs = "limit=5&name=" + encodeURIComponent(t.name);
       const r = await fetch("https://api.hubapi.com/marketing/v3/emails?" + qs, {
         headers: { "Authorization": "Bearer " + HUBSPOT_API_KEY },
       });
-      if (!r.ok) break;
+      if (!r.ok) return { name: t.name, id: null, group: t.group };
       const data = await r.json();
-      allEmails.push(...(data.results || []));
-      after = data.paging?.next?.after || null;
-    } while (after && allEmails.length < 500);
-
-    const emails = targets.map(t => {
-      const match = allEmails.find(e => t.pattern.test(e.name || ""));
+      const match = (data.results || []).find(e => e.name && e.name.trim().toLowerCase() === t.name.toLowerCase());
       return { name: t.name, id: match?.id || null, group: t.group };
-    });
+    }));
     const metrics = await Promise.all(emails.map(async (email) => {
       const emailRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}`, {
         headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
@@ -842,12 +836,15 @@ app.post("/api/ga-report", async (req, res) => {
 // ── Debug: list all HubSpot email names ──────────────────────────────────────
 app.get("/api/debug/email-names", async (req, res) => {
   try {
-    const r = await fetch("https://api.hubapi.com/marketing/v3/emails?limit=50", {
-      headers: { "Authorization": "Bearer " + HUBSPOT_API_KEY },
-    });
-    const d = await r.json();
-    const names = (d.results || []).map(e => ({ id: e.id, name: e.name, subject: e.subject }));
-    res.json(names);
+    const names = ["AOS Nurture Email 1","AOS Nurture Email 2","AOS Nurture Email 3","STAQ Nurture Email 1","STAQ Nurture Email 2","STAQ Nurture Email 3"];
+    const results = await Promise.all(names.map(async name => {
+      const r = await fetch("https://api.hubapi.com/marketing/v3/emails?limit=5&name=" + encodeURIComponent(name), {
+        headers: { "Authorization": "Bearer " + HUBSPOT_API_KEY },
+      });
+      const d = await r.json();
+      return { searching: name, found: (d.results||[]).map(e => ({ id: e.id, name: e.name })) };
+    }));
+    res.json(results);
   } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
