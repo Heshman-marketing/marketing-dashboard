@@ -1168,6 +1168,177 @@ app.post("/api/blog/publish", async (req, res) => {
   }
 });
 
+// ── Product Messaging Agent ───────────────────────────────────────────────────
+// POST /api/messaging/generate
+// Body: { product, audience, sourceMaterial, notes }
+app.post("/api/messaging/generate", async (req, res) => {
+  const { product, audience = "", sourceMaterial = "", notes = "" } = req.body || {};
+  if (!product) return res.status(400).json({ error: "product required" });
+
+  try {
+    // Pull context layer for product info
+    let contextBlock = "";
+    try {
+      const listRes = await fetch(`${CONTEXT_SERVICE_URL}/files`);
+      if (listRes.ok) {
+        const fileList = await listRes.json();
+        const allPaths = Object.values(fileList).flat().map(f => f.path || f).filter(p => !p.startsWith("learnings/"));
+        const fileResults = await Promise.all(
+          allPaths.map(p => fetch(`${CONTEXT_SERVICE_URL}/file?path=${encodeURIComponent(p)}`).then(r => r.ok ? r.json() : null).catch(() => null))
+        );
+        contextBlock = fileResults.filter(Boolean).map(d => d.content || "").filter(Boolean).join("\n\n---\n\n").slice(0, 6000);
+      }
+    } catch {}
+
+    const prompt = `You are creating a structured product messaging framework for Operative, a B2B media technology company.
+
+ABOUT OPERATIVE:
+- AOS: System of record and data layer for the audience economy
+- Adeline: Embedded AI engine for automated deal decisioning and audience activation
+- Operative One (also called "Operative.One"): Deal management and digital ad management platform
+- Strategic narrative: Operative is "the system of record for the audience economy" — a structural shift in media from selling inventory to continuously monetizing audience value
+
+BRAND VOICE:
+- Plain-spoken and practical over polished and marketing-heavy
+- The key insight: teams should build what differentiates them, not rebuild foundational infrastructure
+- "Audience economy" is a category claim, not a passing reference — thread it through the framework
+- No em-dashes. No italics. No generic marketing language.
+
+${contextBlock ? "CONTEXT LAYER:\n" + contextBlock + "\n\n" : ""}
+${sourceMaterial ? "SOURCE MATERIAL PROVIDED:\n" + sourceMaterial + "\n\n" : ""}
+
+Generate a messaging framework for: ${product}
+Target audience: ${audience || "Revenue Operations and Ad Ops leaders at premium publishers, broadcasters, and streaming platforms"}
+${notes ? "Additional direction: " + notes : ""}
+
+STRICT FORMAT REQUIREMENTS — follow word limits exactly:
+
+POSITIONING (50 words maximum):
+Use this sentence structure exactly:
+"[PRODUCT] is a [DEFINITION] for [TARGET AUDIENCE] who need to [CHALLENGE]. Unlike [COMPETITIVE OFFERINGS], [PRODUCT] [DIFFERENTIATION] in order to [OUTCOME]."
+
+KEY MESSAGE (8 words maximum):
+Start with an action verb. Be bold and direct.
+
+SUPPORTING MESSAGE (20 words maximum):
+Start with an action verb. Expand on the key message with specificity.
+
+THREE PILLARS — each pillar must have:
+- Pillar name (3 words maximum)
+- Customer Challenge (8 words maximum) — the specific pain point
+- Benefit Statement (10 words maximum) — the value delivered
+- Supporting Features (exactly 3 features, each with a name and a description of 12 words maximum)
+
+Return ONLY a valid JSON object with this exact structure:
+{
+  "product": "${product}",
+  "audience": "target audience description",
+  "positioning": "positioning statement here",
+  "keyMessage": "key message here",
+  "supportingMessage": "supporting message here",
+  "pillars": [
+    {
+      "pillar": "Pillar Name",
+      "customerChallenge": "customer challenge text",
+      "benefitStatement": "benefit statement text",
+      "features": [
+        {"name": "Feature Name", "description": "feature description up to 12 words"},
+        {"name": "Feature Name", "description": "feature description up to 12 words"},
+        {"name": "Feature Name", "description": "feature description up to 12 words"}
+      ]
+    },
+    { ... },
+    { ... }
+  ]
+}
+
+Return ONLY valid JSON. No preamble, no markdown fences. Exactly 3 pillars, exactly 3 features each.`;
+
+    const r = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 3000, messages: [{ role: "user", content: prompt }] }),
+    });
+    const data = await r.json();
+    if (data.error) return res.status(500).json({ error: data.error.message });
+    const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("");
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) return res.status(500).json({ error: "Could not parse framework", raw: text.slice(0, 500) });
+    const framework = JSON.parse(jsonMatch[0]);
+    res.json(framework);
+  } catch (err) {
+    console.error("[messaging/generate]", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/messaging/export
+// Body: the framework JSON — returns a .docx file
+app.post("/api/messaging/export", async (req, res) => {
+  const framework = req.body;
+  if (!framework?.product) return res.status(400).json({ error: "framework data required" });
+  try {
+    const {
+      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+      AlignmentType, BorderStyle, WidthType, ShadingType, Header, Footer, PageNumber
+    } = require("docx");
+
+    const NAVY="061A3D",ORANGE="FC5000",LGRAY="F5F6F8",MGRAY="E4E7ED",DGRAY="32415E",WHITE="FFFFFF",TEXT2="1A2333",MUTED="6B7A8D";
+    const nb={style:BorderStyle.NONE,size:0,color:"FFFFFF"};
+    const cb=(c=MGRAY)=>({style:BorderStyle.SINGLE,size:4,color:c});
+    const cbs=(c=MGRAY)=>({top:cb(c),bottom:cb(c),left:cb(c),right:cb(c)});
+    const sp=(b=0,a=0)=>({before:b,after:a});
+    const tx=(text,{bold=false,color=TEXT2,size=20,italic=false}={})=>new TextRun({text,bold,color,size,font:"Arial",italics:italic});
+    const pr=(children,{spacing=sp(0,100),alignment=AlignmentType.LEFT,border=null}={})=>new Paragraph({children,spacing,alignment,...(border?{border}:{})});
+
+    const COL=3120;
+    const pillarsTable=()=>new Table({
+      width:{size:9360,type:WidthType.DXA},columnWidths:[COL,COL,COL],
+      rows:[
+        new TableRow({children:framework.pillars.map(p=>new TableCell({width:{size:COL,type:WidthType.DXA},borders:cbs(ORANGE),shading:{fill:NAVY,type:ShadingType.CLEAR},margins:{top:120,bottom:120,left:160,right:160},children:[pr([tx(p.pillar,{bold:true,color:WHITE,size:22})],{spacing:sp(0,0),alignment:AlignmentType.CENTER})]}))}),
+        new TableRow({children:framework.pillars.map(p=>new TableCell({width:{size:COL,type:WidthType.DXA},borders:cbs(),shading:{fill:WHITE,type:ShadingType.CLEAR},margins:{top:120,bottom:120,left:160,right:160},children:[pr([tx("CUSTOMER CHALLENGE",{bold:true,color:ORANGE,size:14})],{spacing:sp(0,40)}),pr([tx(p.customerChallenge,{color:TEXT2,size:20})],{spacing:sp(0,0)})]}))}),
+        new TableRow({children:framework.pillars.map(p=>new TableCell({width:{size:COL,type:WidthType.DXA},borders:cbs(),shading:{fill:LGRAY,type:ShadingType.CLEAR},margins:{top:120,bottom:120,left:160,right:160},children:[pr([tx("BENEFIT STATEMENT",{bold:true,color:ORANGE,size:14})],{spacing:sp(0,40)}),pr([tx(p.benefitStatement,{color:TEXT2,size:20})],{spacing:sp(0,0)})]}))}),
+        new TableRow({children:framework.pillars.map(p=>new TableCell({width:{size:COL,type:WidthType.DXA},borders:cbs(),shading:{fill:WHITE,type:ShadingType.CLEAR},margins:{top:120,bottom:160,left:160,right:160},children:[pr([tx("SUPPORTING FEATURES",{bold:true,color:ORANGE,size:14})],{spacing:sp(0,60)}),...p.features.map(f=>pr([tx(f.name,{bold:true,color:NAVY,size:18}),tx(": ",{color:MUTED,size:18}),tx(f.description,{color:MUTED,size:18})],{spacing:sp(0,60)}))]}))})
+      ]
+    });
+
+    const doc = new Document({
+      sections:[{
+        properties:{page:{size:{width:12240,height:15840},margin:{top:1080,right:1080,bottom:1080,left:1080}}},
+        headers:{default:new Header({children:[pr([tx("Operative",{bold:true,color:NAVY,size:18}),tx(" · Messaging Framework — ",{color:MUTED,size:18}),tx(framework.product,{bold:true,color:ORANGE,size:18})],{spacing:sp(0,0),border:{bottom:{style:BorderStyle.SINGLE,size:4,color:MGRAY,space:4}}})]})},
+        footers:{default:new Footer({children:[pr([tx("Operative — Confidential",{color:MUTED,size:16}),tx("	",{size:16}),tx("Page ",{color:MUTED,size:16}),new TextRun({children:[PageNumber.CURRENT],color:MUTED,size:16,font:"Arial"})],{spacing:sp(0,0),border:{top:{style:BorderStyle.SINGLE,size:4,color:MGRAY,space:4}}})]})},
+        children:[
+          pr([tx(framework.product,{bold:true,color:NAVY,size:52})],{spacing:sp(0,80)}),
+          pr([tx("Messaging Framework",{color:ORANGE,size:28})],{spacing:sp(0,40)}),
+          pr([tx(framework.audience||"",{color:MUTED,size:20})],{spacing:sp(0,0),border:{bottom:{style:BorderStyle.SINGLE,size:8,color:ORANGE,space:8}}}),
+          pr([tx("")],{spacing:sp(0,240)}),
+          pr([tx("Positioning",{bold:true,color:NAVY,size:28})],{spacing:sp(240,120)}),
+          pr([tx("POSITIONING STATEMENT",{bold:true,color:ORANGE,size:14})],{spacing:sp(0,40)}),
+          pr([tx(framework.positioning,{color:TEXT2,size:20})]),
+          pr([tx("")],{spacing:sp(0,200)}),
+          pr([tx("Key Message",{bold:true,color:NAVY,size:28})],{spacing:sp(240,120)}),
+          new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({width:{size:9360,type:WidthType.DXA},borders:cbs(ORANGE),shading:{fill:NAVY,type:ShadingType.CLEAR},margins:{top:200,bottom:200,left:320,right:320},children:[pr([tx(framework.keyMessage,{bold:true,color:WHITE,size:28})],{spacing:sp(0,0),alignment:AlignmentType.CENTER})]})]})]}) ,
+          pr([tx("")],{spacing:sp(0,200)}),
+          pr([tx("Supporting Message",{bold:true,color:NAVY,size:28})],{spacing:sp(240,120)}),
+          new Table({width:{size:9360,type:WidthType.DXA},columnWidths:[9360],rows:[new TableRow({children:[new TableCell({width:{size:9360,type:WidthType.DXA},borders:cbs(MGRAY),shading:{fill:LGRAY,type:ShadingType.CLEAR},margins:{top:160,bottom:160,left:280,right:280},children:[pr([tx(framework.supportingMessage,{color:DGRAY,size:22})],{spacing:sp(0,0)})]})]})]}),
+          pr([tx("")],{spacing:sp(0,200)}),
+          pr([tx("Messaging Pillars",{bold:true,color:NAVY,size:28})],{spacing:sp(240,120)}),
+          pillarsTable(),
+        ]
+      }]
+    });
+
+    const buf = await Packer.toBuffer(doc);
+    const slug = framework.product.toLowerCase().replace(/[^a-z0-9]+/g,"-");
+    res.setHeader("Content-Type","application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.setHeader("Content-Disposition",`attachment; filename="operative-messaging-${slug}.docx"`);
+    res.send(buf);
+  } catch (err) {
+    console.error("[messaging/export]", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── GA debug endpoint ─────────────────────────────────────────────────────────
 app.get("/api/ga-test", async (req, res) => {
   try {
