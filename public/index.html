@@ -1513,6 +1513,38 @@
             <div class="upload-preview-content" id="uploadPreviewContent"></div>
           </div>
         </div>
+        <div class="file-editor-panel" id="linkPanel" style="display:none;flex-direction:column">
+          <div class="editor-hdr">
+            <div class="editor-path">Link Article URL</div>
+            <button class="edit-btn cancel" onclick="hideLinkPanel()">Cancel</button>
+          </div>
+          <div style="padding:1rem;display:flex;flex-direction:column;gap:.75rem;flex-shrink:0">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);margin-bottom:.3rem">URL</div>
+              <input class="nfi" id="linkUrl" placeholder="https://www.example.com/article" autocomplete="off" style="font-size:.72rem;padding:.45rem .7rem"/>
+            </div>
+            <div style="display:flex;gap:.5rem;align-items:center">
+              <select class="nfi" id="linkSection" style="width:90px;flex-shrink:0">
+                <option value="global">global/</option>
+                <option value="agents">agents/</option>
+                <option value="learnings">learnings/</option>
+              </select>
+              <input class="nfi" id="linkFileName" placeholder="filename.md" style="flex:1"/>
+            </div>
+            <button class="nfi-create" id="linkFetchBtn" onclick="fetchLinkUrl()" style="padding:.5rem;font-size:.72rem;border-radius:6px">Fetch &amp; Preview</button>
+            <div id="linkStatus" style="font-size:.7rem;color:var(--text-3)"></div>
+          </div>
+          <div class="upload-preview" id="linkPreview">
+            <div class="upload-preview-hdr">
+              <div style="font-family:'JetBrains Mono',monospace;font-size:.65rem;color:var(--text-3);flex:1" id="linkPreviewPath"></div>
+              <div class="editor-actions">
+                <button class="edit-btn cancel" onclick="hideLinkPanel()">Cancel</button>
+                <button class="edit-btn save" onclick="saveLinkFile()">Save to Context</button>
+              </div>
+            </div>
+            <div class="upload-preview-content" id="linkPreviewContent"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2187,6 +2219,63 @@ function loadAll() {
   loadContextHealth();
   loadHomeGA();
   loadHomeHS();
+}
+
+// ── Link Article (context editor) ─────────────────────────────────────────────
+function showLinkPanel() {
+  document.getElementById('editorPanel').style.display = 'none';
+  document.getElementById('uploadPanel').style.display = 'none';
+  document.getElementById('linkPanel').style.display = 'flex';
+  document.getElementById('linkPanel').style.flexDirection = 'column';
+  document.getElementById('linkUrl').value = '';
+  document.getElementById('linkFileName').value = '';
+  document.getElementById('linkStatus').textContent = '';
+  document.getElementById('linkPreview').classList.remove('open');
+  setTimeout(() => document.getElementById('linkUrl').focus(), 100);
+}
+function hideLinkPanel() {
+  document.getElementById('linkPanel').style.display = 'none';
+  document.getElementById('editorPanel').style.display = 'flex';
+}
+async function fetchLinkUrl() {
+  const url = document.getElementById('linkUrl').value.trim();
+  if (!url) { document.getElementById('linkStatus').textContent = 'Enter a URL.'; return; }
+  const btn = document.getElementById('linkFetchBtn');
+  btn.disabled = true; btn.textContent = 'Fetching...';
+  document.getElementById('linkStatus').textContent = 'Fetching and extracting content...';
+  document.getElementById('linkPreview').classList.remove('open');
+  try {
+    const r = await fetch('/api/context/fetch-url', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-editor-token': window._token },
+      body: JSON.stringify({ url })
+    });
+    const d = await r.json();
+    if (!r.ok || d.error) throw new Error(d.error || 'Fetch failed');
+    // Auto-suggest filename from URL
+    const suggested = d.suggestedName || url.replace(/^https?:\/\//, '').replace(/[^a-z0-9]+/gi, '-').slice(0, 40) + '.md';
+    if (!document.getElementById('linkFileName').value) document.getElementById('linkFileName').value = suggested;
+    document.getElementById('linkPreviewContent').textContent = d.content;
+    document.getElementById('linkPreviewPath').textContent = document.getElementById('linkSection').value + '/' + document.getElementById('linkFileName').value;
+    document.getElementById('linkPreview').classList.add('open');
+    document.getElementById('linkStatus').textContent = '';
+  } catch (err) {
+    document.getElementById('linkStatus').textContent = 'Error: ' + err.message;
+  }
+  btn.disabled = false; btn.textContent = 'Fetch & Preview';
+}
+async function saveLinkFile() {
+  const section = document.getElementById('linkSection').value;
+  let name = document.getElementById('linkFileName').value.trim();
+  if (!name) { showToast('Enter a filename.', 'error'); return; }
+  if (!name.endsWith('.md')) name += '.md';
+  const fp = section + '/' + name;
+  const content = document.getElementById('linkPreviewContent').textContent;
+  try {
+    const r = await fetch('/api/context/file', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-editor-token': window._token }, body: JSON.stringify({ path: fp, content }) });
+    if (r.ok) { showToast('Saved to ' + fp, 'success'); hideLinkPanel(); await loadFileTree(); loadFile(fp); }
+    else showToast('Save failed.', 'error');
+  } catch { showToast('Save failed.', 'error'); }
 }
 
 // ── All Emails view ──────────────────────────────────────────────────────────
