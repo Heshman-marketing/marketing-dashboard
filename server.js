@@ -839,6 +839,18 @@ app.post("/api/ga-report", async (req, res) => {
   }
 });
 
+// ── Debug: list all HubSpot email names ──────────────────────────────────────
+app.get("/api/debug/email-names", async (req, res) => {
+  try {
+    const r = await fetch("https://api.hubapi.com/marketing/v3/emails?limit=50", {
+      headers: { "Authorization": "Bearer " + HUBSPOT_API_KEY },
+    });
+    const d = await r.json();
+    const names = (d.results || []).map(e => ({ id: e.id, name: e.name, subject: e.subject }));
+    res.json(names);
+  } catch (err) { res.status(500).json({ error: err.message }); }
+});
+
 // ── Recent email metrics — last 5 sent emails ────────────────────────────────
 app.get("/api/email-metrics/recent", async (req, res) => {
   const limit = parseInt(req.query.limit) || 5;
