@@ -233,12 +233,12 @@ app.get("/api/email-outputs", async (req, res) => {
 app.get("/api/email-metrics", async (req, res) => {
   // Match by name pattern so we don't depend on IDs that may change
   const targets = [
-    { pattern: /nurture.*email.*1|email.*1.*nurture/i, name: "AOS Nurture Email 1", group: "AOS" },
-    { pattern: /nurture.*email.*2|email.*2.*nurture/i, name: "AOS Nurture Email 2", group: "AOS" },
-    { pattern: /nurture.*email.*3|email.*3.*nurture/i, name: "AOS Nurture Email 3", group: "AOS" },
-    { pattern: /staq.*email.*1|email.*1.*staq|staq.*nurture.*1|staq.*prospect.*1/i, name: "STAQ Email 1", group: "STAQ" },
-    { pattern: /staq.*email.*2|email.*2.*staq|staq.*nurture.*2|staq.*prospect.*2/i, name: "STAQ Email 2", group: "STAQ" },
-    { pattern: /staq.*email.*3|email.*3.*staq|staq.*nurture.*3|staq.*prospect.*3/i, name: "STAQ Email 3", group: "STAQ" },
+    { pattern: /^AOS Nurture Email 1$/i, name: "AOS Nurture Email 1", group: "AOS" },
+    { pattern: /^AOS Nurture Email 2$/i, name: "AOS Nurture Email 2", group: "AOS" },
+    { pattern: /^AOS Nurture Email 3$/i, name: "AOS Nurture Email 3", group: "AOS" },
+    { pattern: /^STAQ Nurture Email 1$/i, name: "STAQ Nurture Email 1", group: "STAQ" },
+    { pattern: /^STAQ Nurture Email 2$/i, name: "STAQ Nurture Email 2", group: "STAQ" },
+    { pattern: /^STAQ Nurture Email 3$/i, name: "STAQ Nurture Email 3", group: "STAQ" },
   ];
   try {
     // Fetch all emails from HubSpot and match by name
