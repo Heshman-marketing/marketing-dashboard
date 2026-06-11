@@ -231,28 +231,17 @@ app.get("/api/email-outputs", async (req, res) => {
 
 // ── HubSpot email metrics ──────────────────────────────────────────────────────
 app.get("/api/email-metrics", async (req, res) => {
-  // Match by name pattern so we don't depend on IDs that may change
-  const targets = [
-    { pattern: /^AOS Nurture Email 1$/i, name: "AOS Nurture Email 1", group: "AOS" },
-    { pattern: /^AOS Nurture Email 2$/i, name: "AOS Nurture Email 2", group: "AOS" },
-    { pattern: /^AOS Nurture Email 3$/i, name: "AOS Nurture Email 3", group: "AOS" },
-    { pattern: /^STAQ Nurture Email 1$/i, name: "STAQ Nurture Email 1", group: "STAQ" },
-    { pattern: /^STAQ Nurture Email 2$/i, name: "STAQ Nurture Email 2", group: "STAQ" },
-    { pattern: /^STAQ Nurture Email 3$/i, name: "STAQ Nurture Email 3", group: "STAQ" },
-  ];
   try {
     // Fetch all emails from HubSpot and match by name
-    // Search for each email by name directly
-    const emails = await Promise.all(targets.map(async t => {
-      const qs = "limit=5&name=" + encodeURIComponent(t.name);
-      const r = await fetch("https://api.hubapi.com/marketing/v3/emails?" + qs, {
-        headers: { "Authorization": "Bearer " + HUBSPOT_API_KEY },
-      });
-      if (!r.ok) return { name: t.name, id: null, group: t.group };
-      const data = await r.json();
-      const match = (data.results || []).find(e => e.name && e.name.trim().toLowerCase() === t.name.toLowerCase());
-      return { name: t.name, id: match?.id || null, group: t.group };
-    }));
+    // Hardcoded email IDs (verified via /api/debug/email-names)
+    const emails = [
+      { name: "AOS Nurture Email 1", id: "209930076194", group: "AOS" },
+      { name: "AOS Nurture Email 2", id: "209930191703", group: "AOS" },
+      { name: "AOS Nurture Email 3", id: "209930208573", group: "AOS" },
+      { name: "STAQ Nurture Email 1", id: "210411155104", group: "STAQ" },
+      { name: "STAQ Nurture Email 2", id: "210407639089", group: "STAQ" },
+      { name: "STAQ Nurture Email 3", id: "210407658574", group: "STAQ" },
+    ];
     const metrics = await Promise.all(emails.map(async (email) => {
       const emailRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}`, {
         headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
