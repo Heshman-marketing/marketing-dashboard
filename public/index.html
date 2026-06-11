@@ -894,14 +894,22 @@
           <div class="msg-form-body">
             <div class="msg-field">
               <label class="msg-label">Product</label>
-              <select class="msg-select" id="msgProduct">
-                <option value="AOS">AOS (Ad Operating System)</option>
+              <select class="msg-select" id="msgProduct" onchange="handleMsgProductChange()">
+                <option value="AOS">AOS</option>
                 <option value="Adeline">Adeline AI</option>
                 <option value="Operative One">Operative One</option>
                 <option value="STAQ">STAQ</option>
                 <option value="OnAir">OnAir</option>
-                <option value="Operative Platform">Operative Platform (full suite)</option>
+                <option value="other">Other / New Product...</option>
               </select>
+            </div>
+            <div class="msg-field" id="msgModuleField" style="display:none">
+              <label class="msg-label">Module / Capability Name <span style="color:var(--muted);font-weight:400">(optional)</span></label>
+              <input class="msg-input" id="msgModule" placeholder="e.g. Audience Activation, Deal Intelligence, Yield Engine" autocomplete="off"/>
+            </div>
+            <div class="msg-field" id="msgCustomProductField" style="display:none">
+              <label class="msg-label">Product Name</label>
+              <input class="msg-input" id="msgCustomProduct" placeholder="e.g. Adeline Forecasting, AOS Commerce, new product name" autocomplete="off"/>
             </div>
             <div class="msg-field">
               <label class="msg-label">Target Audience</label>
@@ -909,7 +917,12 @@
             </div>
             <div class="msg-field">
               <label class="msg-label">Source Material <span style="color:var(--muted);font-weight:400">(optional)</span></label>
-              <textarea class="msg-textarea" id="msgSource" placeholder="Paste press releases, product pages, internal narratives, or any reference material..."></textarea>
+              <div style="display:flex;gap:.5rem;margin-bottom:.375rem">
+                <button class="msg-action-btn" onclick="document.getElementById('msgFileInput').click()" style="font-size:.65rem;padding:.3rem .75rem">&#128206; Upload File</button>
+                <span id="msgFileName" style="font-size:.7rem;color:var(--muted);align-self:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"></span>
+              </div>
+              <input type="file" id="msgFileInput" accept=".pdf,.doc,.docx,.txt,.md,.html" style="display:none" onchange="handleMsgFile(event)"/>
+              <textarea class="msg-textarea" id="msgSource" placeholder="Or paste press releases, product pages, internal narratives..." style="min-height:60px"></textarea>
             </div>
             <div class="msg-field">
               <label class="msg-label">Direction / Notes <span style="color:var(--muted);font-weight:400">(optional)</span></label>
@@ -1096,6 +1109,14 @@ document.getElementById('blogPreviewBody').querySelectorAll('em,i').forEach(el=>
 });const pub=document.getElementById('blogPublishBtn');const regen=document.getElementById('blogRegenerateBtn');const copy=document.getElementById('blogCopyBtn');if(pub)pub.style.display='block';if(regen)regen.style.display='block';if(copy)copy.style.display='block';}
 async function publishBlogPost(){if(!_blogPost)return;const btn=document.getElementById('blogPublishBtn');btn.disabled=true;btn.textContent='Pushing to WordPress...';try{const r=await fetch('/api/blog/publish',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({..._blogPost,status:'draft'})});if(!r.ok)throw new Error('Server error '+r.status);const data=await r.json();if(data.error)throw new Error(data.error);const banner=document.getElementById('blogSuccessBanner');banner.style.display='flex';banner.innerHTML=`<div class="blog-success-text">&#10003; Draft saved to WordPress</div><a class="blog-success-link" href="${escapeHtml(data.editUrl)}" target="_blank">Edit in WordPress &rarr;</a>`;showToast('Draft pushed to WordPress.','success');btn.textContent='Pushed ✓';}catch(err){showToast(err.message,'error');btn.disabled=false;btn.textContent='Push to WordPress →';}}
 function copyBlogPost(){if(!_blogPost?.body)return;navigator.clipboard.writeText(_blogPost.body).then(()=>showToast('HTML copied to clipboard.','success'));}
+
+// ── Product Messaging Agent ──
+let _msgFramework=null;
+function handleMsgProductChange(){const val=document.getElementById('msgProduct')?.value;const mf=document.getElementById('msgModuleField');const cf=document.getElementById('msgCustomProductField');if(mf)mf.style.display=val==='AOS'?'flex':'none';if(cf)cf.style.display=val==='other'?'flex':'none';}
+async function handleMsgFile(event){const file=event.target.files?.[0];if(!file)return;const nameEl=document.getElementById('msgFileName');if(nameEl)nameEl.textContent=file.name;const textarea=document.getElementById('msgSource');try{if(file.type==='text/plain'||file.name.endsWith('.md')||file.name.endsWith('.txt')){const text=await file.text();if(textarea)textarea.value=text;}else if(file.name.endsWith('.html')||file.type==='text/html'){const text=await file.text();const clean=text.replace(/<style[^>]*>[\s\S]*?<\/style>/gi,'').replace(/<script[^>]*>[\s\S]*?<\/script>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();if(textarea)textarea.value=clean;}else{const fd=new FormData();fd.append('file',file);showToast('Extracting text from file...','info');const r=await fetch('/api/context/upload',{method:'POST',headers:{'x-editor-token':window._token||'operative2026'},body:fd});if(r.ok){const d=await r.json();if(textarea&&d.content){textarea.value=d.content;showToast('File extracted.','success');}}else{showToast('Could not extract file — paste content manually.','error');}}}catch{showToast('Could not read file.','error');}}
+async function generateMessaging(){const btn=document.getElementById('msgGenerateBtn');const regen=document.getElementById('msgRegenBtn');const exp=document.getElementById('msgExportBtn');btn.disabled=true;if(regen)regen.disabled=true;if(exp)exp.style.display='none';let product=document.getElementById('msgProduct')?.value||'AOS';if(product==='other')product=document.getElementById('msgCustomProduct')?.value.trim()||'New Product';const module_=document.getElementById('msgModule')?.value.trim()||'';const fullProductName=module_?product+' — '+module_:product;document.getElementById('msgPreviewTitle').textContent=fullProductName+' — Generating...';document.getElementById('msgPreviewMeta').textContent='';document.getElementById('msgPreviewBody').innerHTML='<div class="msg-generating"><div class="msg-generating-spinner"></div><div style="font-weight:600;color:var(--text-2)">Building your framework...</div><div style="font-size:.75rem">Pulling context, applying structure, writing copy</div></div>';try{const r=await fetch('/api/messaging/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({product:fullProductName,audience:document.getElementById('msgAudience')?.value.trim()||'',sourceMaterial:document.getElementById('msgSource')?.value.trim()||'',notes:document.getElementById('msgNotes')?.value.trim()||''})});if(!r.ok)throw new Error('Server error '+r.status);const fw=await r.json();if(fw.error)throw new Error(fw.error);_msgFramework=fw;renderMessagingFramework(fw);}catch(err){document.getElementById('msgPreviewBody').innerHTML=`<div class="msg-empty"><div style="color:var(--red)">${escapeHtml(err.message)}</div></div>`;document.getElementById('msgPreviewTitle').textContent='Generation failed';showToast('Could not generate framework.','error');}btn.disabled=false;if(regen){regen.disabled=false;regen.style.display='block';}}
+function renderMessagingFramework(fw){document.getElementById('msgPreviewTitle').textContent=fw.product+' Messaging Framework';document.getElementById('msgPreviewMeta').textContent=fw.audience||'';document.getElementById('msgExportBtn').style.display='block';document.getElementById('msgRegenBtn').style.display='block';const pillarsHtml=(fw.pillars||[]).map(p=>`<div class="msg-pillar"><div class="msg-pillar-header">${escapeHtml(p.pillar)}</div><div class="msg-pillar-section"><div class="msg-pillar-label">Customer Challenge</div><div class="msg-pillar-text">${escapeHtml(p.customerChallenge)}</div></div><div class="msg-pillar-section"><div class="msg-pillar-label">Benefit Statement</div><div class="msg-pillar-text">${escapeHtml(p.benefitStatement)}</div></div><div class="msg-pillar-section"><div class="msg-pillar-label">Supporting Features</div>${(p.features||[]).map(f=>`<div class="msg-feature"><span class="msg-feature-name">${escapeHtml(f.name)}</span> — ${escapeHtml(f.description)}</div>`).join('')}</div></div>`).join('');document.getElementById('msgPreviewBody').innerHTML=`<div class="msg-section"><div class="msg-section-title">Positioning Statement</div><div class="msg-positioning">${escapeHtml(fw.positioning)}</div></div><div class="msg-section"><div class="msg-section-title">Key Message</div><div class="msg-key-message">${escapeHtml(fw.keyMessage)}</div></div><div class="msg-section"><div class="msg-section-title">Supporting Message</div><div class="msg-supporting">${escapeHtml(fw.supportingMessage)}</div></div><div class="msg-section"><div class="msg-section-title">Messaging Pillars</div><div class="msg-pillars">${pillarsHtml}</div></div>`;}
+async function exportMessaging(){if(!_msgFramework)return;const btn=document.getElementById('msgExportBtn');btn.disabled=true;btn.textContent='Exporting...';try{const r=await fetch('/api/messaging/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_msgFramework)});if(!r.ok)throw new Error('Export failed');const blob=await r.blob();const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='operative-messaging-'+(_msgFramework.product||'framework').toLowerCase().replace(/[^a-z0-9]+/g,'-')+'.docx';a.click();URL.revokeObjectURL(url);showToast('Word document downloaded.','success');}catch(err){showToast('Export failed: '+err.message,'error');}btn.disabled=false;btn.textContent='Download Word';}
 
 function loadAll(){loadStatus();loadLearnings();loadContextHealth();loadHomeGA();loadHomeHS();}
 
