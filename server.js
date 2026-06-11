@@ -245,9 +245,9 @@ app.get("/api/email-metrics", async (req, res) => {
     const allEmails = [];
     let after = null;
     do {
-      const qs = \`limit=100\${after ? \`&after=\${after}\` : ""}\`;
-      const r = await fetch(\`https://api.hubapi.com/marketing/v3/emails?\${qs}\`, {
-        headers: { "Authorization": \`Bearer \${HUBSPOT_API_KEY}\` },
+      const qs = "limit=100" + (after ? "&after=" + after : "");
+      const r = await fetch("https://api.hubapi.com/marketing/v3/emails?" + qs, {
+        headers: { "Authorization": "Bearer " + HUBSPOT_API_KEY },
       });
       if (!r.ok) break;
       const data = await r.json();
