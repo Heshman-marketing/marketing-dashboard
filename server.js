@@ -1,8 +1,4 @@
 const express = require("express");
-const docx = require("docx");
-const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
-  AlignmentType, BorderStyle, WidthType, ShadingType, Header, Footer, PageNumber
-} = docx;
 const fetch = require("node-fetch");
 const path = require("path");
 const multer = require("multer");
@@ -235,15 +231,34 @@ app.get("/api/email-outputs", async (req, res) => {
 
 // ── HubSpot email metrics ──────────────────────────────────────────────────────
 app.get("/api/email-metrics", async (req, res) => {
-  const emails = [
-    { name: "AOS Nurture Email 1", id: "209930076194", group: "AOS" },
-    { name: "AOS Nurture Email 2", id: "209930191703", group: "AOS" },
-    { name: "AOS Nurture Email 3", id: "209930208573", group: "AOS" },
-    { name: "STAQ Nurture Email 1", id: "210411155104", group: "STAQ" },
-    { name: "STAQ Nurture Email 2", id: "210407639089", group: "STAQ" },
-    { name: "STAQ Nurture Email 3", id: "210407658574", group: "STAQ" },
+  // Match by name pattern so we don't depend on IDs that may change
+  const targets = [
+    { pattern: /nurture.*email.*1|email.*1.*nurture/i, name: "AOS Nurture Email 1", group: "AOS" },
+    { pattern: /nurture.*email.*2|email.*2.*nurture/i, name: "AOS Nurture Email 2", group: "AOS" },
+    { pattern: /nurture.*email.*3|email.*3.*nurture/i, name: "AOS Nurture Email 3", group: "AOS" },
+    { pattern: /staq.*email.*1|email.*1.*staq|staq.*nurture.*1|staq.*prospect.*1/i, name: "STAQ Email 1", group: "STAQ" },
+    { pattern: /staq.*email.*2|email.*2.*staq|staq.*nurture.*2|staq.*prospect.*2/i, name: "STAQ Email 2", group: "STAQ" },
+    { pattern: /staq.*email.*3|email.*3.*staq|staq.*nurture.*3|staq.*prospect.*3/i, name: "STAQ Email 3", group: "STAQ" },
   ];
   try {
+    // Fetch all emails from HubSpot and match by name
+    const allEmails = [];
+    let after = null;
+    do {
+      const qs = \`limit=100\${after ? \`&after=\${after}\` : ""}\`;
+      const r = await fetch(\`https://api.hubapi.com/marketing/v3/emails?\${qs}\`, {
+        headers: { "Authorization": \`Bearer \${HUBSPOT_API_KEY}\` },
+      });
+      if (!r.ok) break;
+      const data = await r.json();
+      allEmails.push(...(data.results || []));
+      after = data.paging?.next?.after || null;
+    } while (after && allEmails.length < 500);
+
+    const emails = targets.map(t => {
+      const match = allEmails.find(e => t.pattern.test(e.name || ""));
+      return { name: t.name, id: match?.id || null, group: t.group };
+    });
     const metrics = await Promise.all(emails.map(async (email) => {
       const emailRes = await fetch(`https://api.hubapi.com/marketing/v3/emails/${email.id}`, {
         headers: { "Authorization": `Bearer ${HUBSPOT_API_KEY}` },
@@ -1282,7 +1297,11 @@ app.post("/api/messaging/export", async (req, res) => {
   const framework = req.body;
   if (!framework?.product) return res.status(400).json({ error: "framework data required" });
   try {
-    // docx loaded at module level
+    const {
+      Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell,
+      AlignmentType, BorderStyle, WidthType, ShadingType, Header, Footer, PageNumber
+    } = require("docx");
+
     const NAVY="061A3D",ORANGE="FC5000",LGRAY="F5F6F8",MGRAY="E4E7ED",DGRAY="32415E",WHITE="FFFFFF",TEXT2="1A2333",MUTED="6B7A8D";
     const nb={style:BorderStyle.NONE,size:0,color:"FFFFFF"};
     const cb=(c=MGRAY)=>({style:BorderStyle.SINGLE,size:4,color:c});
