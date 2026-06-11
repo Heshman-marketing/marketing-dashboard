@@ -1294,8 +1294,9 @@
           <div class="msg-form-hdr">New Framework</div>
           <form autocomplete="off" onsubmit="return false" style="display:contents">
             <div class="msg-form-body">
+              <input type="text" name="username" style="display:none" tabindex="-1" aria-hidden="true"/>
+              <input type="password" name="password" style="display:none" tabindex="-1" aria-hidden="true"/>
               <input type="text" name="fake_msg_u" style="display:none" tabindex="-1" aria-hidden="true"/>
-              <input type="password" name="fake_msg_p" style="display:none" tabindex="-1" aria-hidden="true"/>
               <div class="msg-field">
                 <label class="msg-label">Product</label>
                 <select class="msg-select" id="msgProduct" onchange="handleMsgProductChange()" autocomplete="off">
@@ -1309,15 +1310,15 @@
               </div>
               <div class="msg-field" id="msgModuleField" style="display:none">
                 <label class="msg-label">Module / Capability <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
-                <input class="msg-input" id="msgModule" placeholder="e.g. Audience Activation, Deal Intelligence" autocomplete="new-password"/>
+                <input class="msg-input" id="msgModule" placeholder="e.g. Audience Activation, Deal Intelligence" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"/>
               </div>
               <div class="msg-field" id="msgCustomProductField" style="display:none">
                 <label class="msg-label">Product Name</label>
-                <input class="msg-input" id="msgCustomProduct" placeholder="e.g. AOS Commerce, new product name" autocomplete="new-password"/>
+                <input class="msg-input" id="msgCustomProduct" placeholder="e.g. AOS Commerce, new product name" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"/>
               </div>
               <div class="msg-field">
                 <label class="msg-label">Target Audience</label>
-                <input class="msg-input" id="msgAudience" placeholder="e.g. Revenue Ops leaders at premium publishers" autocomplete="new-password"/>
+                <input class="msg-input" id="msgAudience" placeholder="e.g. Revenue Ops leaders at premium publishers" autocomplete="off" readonly onfocus="this.removeAttribute('readonly')"/>
               </div>
               <div class="msg-field">
                 <label class="msg-label">Source Material <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
