@@ -584,8 +584,8 @@ ${liveContext ? liveContext : "Context layer is loading. Answer from your traini
 
     // Call Anthropic with web_search tool enabled
     const anthropicBody = {
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 2048,
+      model: "claude-opus-4-20250514",
+      max_tokens: 8000,
       system: systemPrompt,
       tools: [
         {
@@ -1274,7 +1274,7 @@ Return ONLY valid JSON. No preamble, no markdown fences. Exactly 3 pillars, exac
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 3000, messages: [{ role: "user", content: prompt }] }),
+      body: JSON.stringify({ model: "claude-opus-4-20250514", max_tokens: 4000, messages: [{ role: "user", content: prompt }] }),
     });
     const data = await r.json();
     if (data.error) return res.status(500).json({ error: data.error.message });
