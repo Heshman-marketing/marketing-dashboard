@@ -1298,8 +1298,13 @@
               <input type="password" name="password" style="display:none" tabindex="-1" aria-hidden="true"/>
               <input type="text" name="fake_msg_u" style="display:none" tabindex="-1" aria-hidden="true"/>
               <div class="msg-field">
-                <label class="msg-label">Product</label>
+                <label class="msg-label">Solution / Feature Name</label>
+                <input class="msg-input" id="msgSolutionName" placeholder="e.g. Audience Activation, AOS for Sports Media, Deal Intelligence" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')"/>
+              </div>
+              <div class="msg-field">
+                <label class="msg-label">Associated Product <span style="color:var(--text-3);font-weight:400">(optional)</span></label>
                 <select class="msg-select" id="msgProduct" onchange="handleMsgProductChange()" autocomplete="off">
+                  <option value="" selected>Select a product...</option>
                   <option value="AOS">AOS</option>
                   <option value="Adeline">Adeline AI</option>
                   <option value="Operative One">Operative One</option>
@@ -2138,8 +2143,7 @@ async function copyBlogPost() {
 let _msgFramework = null;
 function handleMsgProductChange() {
   const val = document.getElementById('msgProduct')?.value;
-  const mf = document.getElementById('msgModuleField'), cf = document.getElementById('msgCustomProductField');
-  if (mf) mf.style.display = val === 'AOS' ? 'flex' : 'none';
+  const cf = document.getElementById('msgCustomProductField');
   if (cf) cf.style.display = val === 'other' ? 'flex' : 'none';
 }
 async function handleMsgFile(event) {
@@ -2165,15 +2169,16 @@ async function handleMsgFile(event) {
 async function generateMessaging() {
   const btn = document.getElementById('msgGenerateBtn'), regen = document.getElementById('msgRegenBtn'), exp = document.getElementById('msgExportBtn');
   btn.disabled = true; if (regen) regen.disabled = true; if (exp) exp.style.display = 'none';
-  let product = document.getElementById('msgProduct')?.value || 'AOS';
-  if (product === 'other') product = document.getElementById('msgCustomProduct')?.value.trim() || 'New Product';
-  const module_ = document.getElementById('msgModule')?.value.trim() || '';
-  const fullProductName = module_ ? product + ' — ' + module_ : product;
+  const solutionName = document.getElementById('msgSolutionName')?.value.trim() || '';
+  let product = document.getElementById('msgProduct')?.value || '';
+  if (product === 'other') product = document.getElementById('msgCustomProduct')?.value.trim() || '';
+  const fullProductName = solutionName || product || 'New Framework';
+  const productContext = product && product !== 'other' ? product : '';
   document.getElementById('msgPreviewTitle').textContent = fullProductName + ' — Generating...';
   document.getElementById('msgPreviewMeta').textContent = '';
   document.getElementById('msgPreviewBody').innerHTML = '<div class="msg-generating"><div class="msg-spinner"></div><div style="font-weight:600;color:var(--text-2)">Building your framework...</div><div style="font-size:.7rem">Pulling context, applying structure, writing copy</div></div>';
   try {
-    const r = await fetch('/api/messaging/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: fullProductName, audience: document.getElementById('msgAudience')?.value.trim()||'', sourceMaterial: document.getElementById('msgSource')?.value.trim()||'', notes: document.getElementById('msgNotes')?.value.trim()||'' }) });
+    const r = await fetch('/api/messaging/generate', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: fullProductName, productContext, audience: document.getElementById('msgAudience')?.value.trim()||'', sourceMaterial: document.getElementById('msgSource')?.value.trim()||'', notes: document.getElementById('msgNotes')?.value.trim()||'' }) });
     if (!r.ok) throw new Error('Server error ' + r.status);
     const fw = await r.json(); if (fw.error) throw new Error(fw.error);
     _msgFramework = fw; renderMessagingFramework(fw);
