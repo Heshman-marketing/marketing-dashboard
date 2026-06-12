@@ -2143,7 +2143,9 @@ async function copyBlogPost() {
 let _msgFramework = null;
 function handleMsgProductChange() {
   const val = document.getElementById('msgProduct')?.value;
+  const mf = document.getElementById('msgModuleField');
   const cf = document.getElementById('msgCustomProductField');
+  if (mf) mf.style.display = val === 'AOS' ? 'flex' : 'none';
   if (cf) cf.style.display = val === 'other' ? 'flex' : 'none';
 }
 async function handleMsgFile(event) {
