@@ -174,7 +174,7 @@ app.post("/api/context/upload", requireAuth, upload.single("file"), async (req, 
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: "claude-sonnet-4-20250514", max_tokens: 4000, messages }),
+      body: JSON.stringify({ model: "claude-sonnet-4-6", max_tokens: 4000, messages }),
     });
     const data = await r.json();
     const cleaned = data.content?.[0]?.text || "";
@@ -584,7 +584,7 @@ ${liveContext ? liveContext : "Context layer is loading. Answer from your traini
 
     // Call Anthropic with web_search tool enabled
     const anthropicBody = {
-      model: "claude-opus-4-20250514",
+      model: "claude-opus-4-8",
       max_tokens: 8000,
       system: systemPrompt,
       tools: [
@@ -1046,7 +1046,7 @@ Return ONLY valid JSON. No preamble, no markdown code fences.`;
         "anthropic-beta": "web-search-2025-03-05",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: "claude-sonnet-4-6",
         max_tokens: 4000,
         tools: [{ type: "web_search_20250305", name: "web_search" }],
         messages: [{ role: "user", content: prompt }],
@@ -1067,7 +1067,7 @@ Return ONLY valid JSON. No preamble, no markdown code fences.`;
         method: "POST",
         headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "anthropic-beta": "web-search-2025-03-05" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514", max_tokens: 4000,
+          model: "claude-sonnet-4-6", max_tokens: 4000,
           tools: [{ type: "web_search_20250305", name: "web_search" }],
           messages: [{ role: "user", content: prompt }, { role: "assistant", content: data.content }, { role: "user", content: toolResults }],
         }),
@@ -1274,7 +1274,7 @@ Return ONLY valid JSON. No preamble, no markdown fences. Exactly 3 pillars, exac
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: "claude-opus-4-20250514", max_tokens: 4000, messages: [{ role: "user", content: prompt }] }),
+      body: JSON.stringify({ model: "claude-opus-4-8", max_tokens: 4000, messages: [{ role: "user", content: prompt }] }),
     });
     const data = await r.json();
     if (data.error) return res.status(500).json({ error: data.error.message });
